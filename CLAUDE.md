@@ -195,6 +195,9 @@ a spinner, wherever possible.
 Entities to implement:
 - `PokemonEntity` — id, name, spriteUrl, types (serialized), base stats (serialized), height,
   weight, cached timestamp
+- `PokemonDetailEntity` — id, genus, flavorText, abilities (serialized), captureRate,
+  movesJson / evolutionJson (Gson-serialized in the repository), cached timestamp. Backs the
+  detail screen's About/Moves/Evo tabs; base stats/types still come from `PokemonEntity`.
 - `TypeEntity` — id, name
 - `TeamEntity` — teamSlot (0–5), pokemonId (nullable)
 
@@ -209,6 +212,7 @@ Define interfaces in `core/domain`, implement in `core/data`:
 interface PokemonRepository {
     suspend fun getPokemonPage(startId: Int, count: Int): List<Pokemon>  // National Dex window, cache-first per entry
     suspend fun getPokemonDetail(id: Int): Pokemon
+    suspend fun getPokemonDetailFull(id: Int): PokemonDetail  // base + species/moves/evolution, cache-first
     fun getTeam(): Flow<List<Pokemon?>>
     suspend fun setTeamSlot(slot: Int, pokemonId: Int?)
 }

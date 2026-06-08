@@ -1,14 +1,26 @@
 package io.beanthemoonman.pokeapp.data.repository
 
+import com.google.gson.Gson
 import io.beanthemoonman.pokeapp.data.local.dao.PokemonDao
+import io.beanthemoonman.pokeapp.data.local.dao.PokemonDetailDao
 import io.beanthemoonman.pokeapp.data.local.dao.TeamDao
 import io.beanthemoonman.pokeapp.data.local.entity.TeamEntity
+import io.beanthemoonman.pokeapp.data.mapper.englishFlavor
+import io.beanthemoonman.pokeapp.data.mapper.englishGenus
 import io.beanthemoonman.pokeapp.data.mapper.toDomain
 import io.beanthemoonman.pokeapp.data.mapper.toEntity
+import io.beanthemoonman.pokeapp.data.mapper.toMoveInfo
+import io.beanthemoonman.pokeapp.data.mapper.toTitle
 import io.beanthemoonman.pokeapp.data.remote.PokeApiService
+import io.beanthemoonman.pokeapp.data.remote.dto.ChainLinkDto
+import io.beanthemoonman.pokeapp.data.remote.dto.EvolutionDetailDto
 import io.beanthemoonman.pokeapp.data.remote.dto.NamedApiResourceDto
+import io.beanthemoonman.pokeapp.data.remote.dto.PokemonDetailDto
+import io.beanthemoonman.pokeapp.domain.model.EvolutionStage
 import io.beanthemoonman.pokeapp.domain.model.Generations
+import io.beanthemoonman.pokeapp.domain.model.MoveInfo
 import io.beanthemoonman.pokeapp.domain.model.Pokemon
+import io.beanthemoonman.pokeapp.domain.model.PokemonDetail
 import io.beanthemoonman.pokeapp.domain.repository.PokemonRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -32,7 +44,9 @@ import javax.inject.Singleton
 class PokemonRepositoryImpl @Inject constructor(
     private val api: PokeApiService,
     private val pokemonDao: PokemonDao,
-    private val teamDao: TeamDao
+    private val detailDao: PokemonDetailDao,
+    private val teamDao: TeamDao,
+    private val gson: Gson
 ) : PokemonRepository {
 
     private val nameIndexMutex = Mutex()
@@ -137,6 +151,128 @@ class PokemonRepositoryImpl @Inject constructor(
         return entity.toDomain()
     }
 
+    override suspend fun getPokemonDetailFull(id: Int): PokemonDetail =
+        withContext(Dispatchers.IO) {
+            // Cache hit: rebuild the aggregate from the cached detail row + cached base.
+            detailDao.getById(id)?.let { cached ->
+                Timber.d("getPokemonDetailFull cache hit id=%d", id)
+                return@withContext cached.toDomain(getPokemonDetail(id), gson)
+            }
+
+            // Miss: one /pokemon fetch supplies both the base row and the moves/species refs.
+            Timber.d("getPokemonDetailFull cache miss id=%d; fetching detail+species+evo+moves", id)
+            val now = System.currentTimeMillis()
+            val dto = api.getPokemonDetail(id)
+            val baseEntity = dto.toEntity(now)
+            pokemonDao.upsert(baseEntity)
+
+            val speciesId = dto.species?.id ?: id
+            val species = api.getPokemonSpecies(speciesId)
+            val moves = resolveLevelUpMoves(dto)
+            val evolution = species.evolutionChain?.id
+                ?.let { chainId ->
+                    runCatching { buildEvolution(chainId) }
+                        .onFailure { Timber.w(it, "evolution chain %d failed", chainId) }
+                        .getOrDefault(emptyList())
+                }
+                .orEmpty()
+            Timber.d(
+                "getPokemonDetailFull id=%d assembled: moves=%d evoStages=%d abilities=%d",
+                id, moves.size, evolution.size, dto.abilities.size
+            )
+
+            val detail = PokemonDetail(
+                pokemon = baseEntity.toDomain(),
+                genus = species.englishGenus(),
+                flavorText = species.englishFlavor(),
+                abilities = dto.abilities.map { it.ability.name.toTitle() },
+                captureRate = species.captureRate,
+                moves = moves,
+                evolution = evolution
+            )
+            detailDao.upsert(detail.toEntity(gson, now))
+            detail
+        }
+
+    /**
+     * The Pokémon's level-up moves for the most recent version group it appears in,
+     * sorted by the level learned (then name) and capped. Each move's combat stats are
+     * fetched from `/move/{name}` concurrently; failures drop that single move.
+     */
+    private suspend fun resolveLevelUpMoves(dto: PokemonDetailDto): List<MoveInfo> {
+        val byMinLevel = dto.moves.mapNotNull { slot ->
+            val level = slot.versionGroupDetails
+                .filter { it.moveLearnMethod.name == LEVEL_UP }
+                .minOfOrNull { it.levelLearnedAt }
+                ?: return@mapNotNull null
+            slot.move.name to level
+        }
+        val capped = byMinLevel
+            .sortedWith(compareBy({ it.second }, { it.first }))
+            .take(MOVES_LIMIT)
+        if (capped.isEmpty()) return emptyList()
+
+        return coroutineScope {
+            capped
+                .map { (name, level) ->
+                    async {
+                        runCatching { api.getMove(name).toMoveInfo(level) }
+                            .onFailure { Timber.w(it, "move %s fetch failed", name) }
+                            .getOrNull()
+                    }
+                }
+                .awaitAll()
+                .filterNotNull()
+        }
+    }
+
+    /**
+     * Flattens an evolution chain (pre-order, so branched lines list every stage) into
+     * ordered [EvolutionStage]s. Each stage's sprite/types come from the cache-first
+     * base lookup; the condition is a short label for how the prior stage evolves into it.
+     */
+    private suspend fun buildEvolution(chainId: Int): List<EvolutionStage> {
+        val chain = api.getEvolutionChain(chainId)
+        val flat = mutableListOf<Pair<ChainLinkDto, String?>>()
+        fun walk(link: ChainLinkDto, condition: String?) {
+            flat += link to condition
+            link.evolvesTo.forEach { next -> walk(next, conditionLabel(next.evolutionDetails)) }
+        }
+        walk(chain.chain, null)
+
+        return coroutineScope {
+            flat.take(EVO_LIMIT).map { (link, condition) ->
+                async {
+                    val stageId = link.species.id
+                    val base = runCatching { getPokemonDetail(stageId) }
+                        .onFailure { Timber.w(it, "evo stage %d base fetch failed", stageId) }
+                        .getOrNull()
+                    EvolutionStage(
+                        id = stageId,
+                        name = base?.name ?: link.species.name.toTitle(),
+                        spriteUrl = base?.spriteUrl.orEmpty(),
+                        types = base?.types.orEmpty(),
+                        condition = condition
+                    )
+                }
+            }.awaitAll()
+        }
+    }
+
+    /** Short human label for an evolution trigger; null when nothing useful is known. */
+    private fun conditionLabel(details: List<EvolutionDetailDto>): String? {
+        val d = details.firstOrNull() ?: return null
+        return when {
+            d.minLevel != null -> "Lv. ${d.minLevel}"
+            d.item != null -> d.item.name.toTitle()
+            d.heldItem != null -> "Hold ${d.heldItem.name.toTitle()}"
+            d.minHappiness != null -> "Friendship"
+            d.trigger?.name == "trade" -> "Trade"
+            d.trigger != null -> d.trigger.name.toTitle()
+            else -> null
+        }
+    }
+
     override fun getTeam(): Flow<List<Pokemon?>> =
         teamDao.getTeamFlow().map { rows ->
             (0 until TEAM_SIZE).map { slot ->
@@ -154,5 +290,10 @@ class PokemonRepositoryImpl @Inject constructor(
         const val TEAM_SIZE = 6
         const val DETAIL_FETCH_CHUNK = 12
         const val SEARCH_RESULT_LIMIT = 20
+        const val LEVEL_UP = "level-up"
+        /** Cap on level-up moves shown on the detail screen (keeps move fetches bounded). */
+        const val MOVES_LIMIT = 24
+        /** Cap on evolution stages (guards against very branched lines, e.g. Eevee). */
+        const val EVO_LIMIT = 8
     }
 }

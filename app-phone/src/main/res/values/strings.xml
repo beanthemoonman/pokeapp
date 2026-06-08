@@ -22,6 +22,42 @@
     <string name="list_load_more_retry">Load more</string>
     <string name="sprite_cd">%1$s sprite</string>
 
+    <!-- Detail screen -->
+    <string name="detail_back">Back</string>
+    <string name="detail_tab_stats">Stats</string>
+    <string name="detail_tab_moves">Moves</string>
+    <string name="detail_tab_about">About</string>
+    <string name="detail_tab_evo">Evo</string>
+    <string name="detail_stats_title">Base Stats</string>
+    <string name="detail_stats_total">TOTAL</string>
+    <string name="detail_stat_hp">HP</string>
+    <string name="detail_stat_attack">Attack</string>
+    <string name="detail_stat_defense">Defense</string>
+    <string name="detail_stat_spatk">Sp. Atk</string>
+    <string name="detail_stat_spdef">Sp. Def</string>
+    <string name="detail_stat_speed">Speed</string>
+    <string name="detail_moves_empty">No level-up moves for this Pokémon.</string>
+    <string name="detail_move_level">Lv. %1$d</string>
+    <string name="detail_move_level_evo">Evo</string>
+    <string name="detail_move_meta">%1$s · %2$dpp</string>
+    <string name="detail_value_none">—</string>
+    <string name="detail_accuracy">%1$d%%</string>
+    <string name="detail_cat_physical">Physical</string>
+    <string name="detail_cat_special">Special</string>
+    <string name="detail_cat_status">Status</string>
+    <string name="detail_about_height">Height</string>
+    <string name="detail_about_weight">Weight</string>
+    <string name="detail_about_category">Category</string>
+    <string name="detail_about_abilities">Abilities</string>
+    <string name="detail_height_value">%1$s m</string>
+    <string name="detail_weight_value">%1$s kg</string>
+    <string name="detail_catch_rate">Catch Rate</string>
+    <string name="detail_catch_rate_value">%1$d / 255</string>
+    <string name="detail_evo_none">%1$s does not evolve.</string>
+    <string name="detail_error_title">Couldn\'t load this Pokémon</string>
+    <string name="detail_error_body">Check your connection and try again.</string>
+    <string name="detail_retry">Retry</string>
+
     <!-- Bottom navigation -->
     <string name="nav_dex">Dex</string>
     <string name="nav_team">Team</string>

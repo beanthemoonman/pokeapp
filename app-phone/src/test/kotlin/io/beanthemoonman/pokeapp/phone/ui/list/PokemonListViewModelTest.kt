@@ -267,6 +267,16 @@ class PokemonListViewModelTest {
         }
 
         override suspend fun getPokemonDetail(id: Int): Pokemon = pokemon(id)
+        override suspend fun getPokemonDetailFull(id: Int) =
+            io.beanthemoonman.pokeapp.domain.model.PokemonDetail(
+                pokemon = pokemon(id),
+                genus = "",
+                flavorText = "",
+                abilities = emptyList(),
+                captureRate = 0,
+                moves = emptyList(),
+                evolution = emptyList(),
+            )
         override fun getTeam(): Flow<List<Pokemon?>> = flow { emit(emptyList()) }
         override suspend fun setTeamSlot(slot: Int, pokemonId: Int?) = Unit
     }

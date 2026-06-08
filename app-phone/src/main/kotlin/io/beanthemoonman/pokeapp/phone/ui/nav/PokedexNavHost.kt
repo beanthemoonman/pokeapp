@@ -27,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.beanthemoonman.pokeapp.phone.R
 import io.beanthemoonman.pokeapp.phone.ui.AppStartViewModel
 import io.beanthemoonman.pokeapp.phone.ui.StartState
+import io.beanthemoonman.pokeapp.phone.ui.detail.PokemonDetailScreen
 import io.beanthemoonman.pokeapp.phone.ui.list.PokemonListScreen
 import io.beanthemoonman.pokeapp.phone.ui.version.VersionSelectScreen
 import io.beanthemoonman.pokeapp.ui.common.theme.PokedexColors
@@ -101,9 +102,8 @@ fun PokedexNavHost(startAtSelector: Boolean) {
             composable(
                 route = NavDestination.Detail.route,
                 arguments = listOf(navArgument(NavDestination.Detail.ARG_ID) { type = NavType.IntType }),
-            ) { entry ->
-                val id = entry.arguments?.getInt(NavDestination.Detail.ARG_ID) ?: 0
-                PlaceholderScreen(R.string.nav_dex, subtitle = "#$id")
+            ) {
+                PokemonDetailScreen(onBack = { navController.popBackStack() })
             }
         }
     }

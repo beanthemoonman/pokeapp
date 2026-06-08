@@ -11,6 +11,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.beanthemoonman.pokeapp.data.local.PokedexDatabase
 import io.beanthemoonman.pokeapp.data.local.dao.PokemonDao
+import io.beanthemoonman.pokeapp.data.local.dao.PokemonDetailDao
 import io.beanthemoonman.pokeapp.data.local.dao.TeamDao
 import io.beanthemoonman.pokeapp.data.remote.PokeApiService
 import retrofit2.Retrofit
@@ -46,6 +47,10 @@ object DataModule {
 
     @Provides
     fun providePokemonDao(database: PokedexDatabase): PokemonDao = database.pokemonDao()
+
+    @Provides
+    fun providePokemonDetailDao(database: PokedexDatabase): PokemonDetailDao =
+        database.pokemonDetailDao()
 
     @Provides
     fun provideTeamDao(database: PokedexDatabase): TeamDao = database.teamDao()

@@ -143,3 +143,51 @@ This turn wired the UI and closed a retry gap.
   `failSearch` on the fake).
 - Verified: `gradlew :app-phone:compileDebugKotlin` and
   `gradlew :app-phone:testDebugUnitTest` → BUILD SUCCESSFUL; all tests pass.
+
+## 2026-06-08
+
+### Phone screen #2 — Pokémon Detail (four tabs, fully data-backed)
+
+Built the Pokémon Detail screen from `wireframes/phone-detail.jsx` (Direction B "Console Card":
+HUD header card + segmented Stats/Moves/About/Evo tabs, accent driven by the primary type).
+The user chose to back **all four tabs with real data**, so this was a full vertical slice
+through every layer rather than just the two tabs (Stats/About) the existing `Pokemon` model
+already supported.
+
+- **core/domain**: new `PokemonDetail` aggregate (composes base `Pokemon` + `genus`,
+  `flavorText`, `abilities`, `captureRate`, `moves`, `evolution`); `MoveInfo` + `MoveCategory`
+  (PHYSICAL/SPECIAL/STATUS); `EvolutionStage` (id/name/sprite/types/condition). The base
+  `Pokemon` model is unchanged — list/team/search keep reusing it. Added
+  `PokemonRepository.getPokemonDetailFull(id)` and `GetPokemonDetailFullUseCase`.
+- **core/data — DTOs + endpoints**: extended `PokemonDetailDto` with `abilities`/`moves`/
+  `species` (nullable/defaulted, so the list-paging path that reuses `/pokemon/{id}` ignores
+  them at no cost). Added `MoveDto`, `PokemonSpeciesDto` (genera/flavor/capture_rate/
+  evolution_chain), `EvolutionChainDto`/`ChainLinkDto`/`EvolutionDetailDto`, and a name-less
+  `ApiResourceDto` for the species→evolution_chain link. New `PokeApiService` endpoints:
+  `getPokemonSpecies`, `getEvolutionChain`, `getMove(name)`.
+- **core/data — cache**: new flat `PokemonDetailEntity` + `PokemonDetailDao`; moves/evolution
+  stored as Gson-serialized JSON String columns (kept flat per the entity rule). `PokedexDatabase`
+  bumped **v1 → v2** (destructive fallback already configured, so no manual migration); DAO
+  provided in `DataModule`.
+- **core/data — repository**: `getPokemonDetailFull` is cache-first (rebuilds the aggregate from
+  the cached detail row + cached base; on miss does ONE `/pokemon` fetch for base+refs, then
+  species, level-up moves, and the evolution line). Moves: filter to `level-up`, min level per
+  move, sort by level then name, cap 24, fetch each `/move` concurrently (failures drop that
+  move). Evolution: pre-order flatten of the chain (cap 8), each stage's sprite/types via the
+  cache-first base lookup, condition label derived from `evolution_details`
+  (Lv. N / item / held item / Friendship / Trade / trigger). Injected `Gson` + `PokemonDetailDao`.
+- **app-phone**: `PokemonDetailViewModel` (`@HiltViewModel`, id from `SavedStateHandle`, exposes
+  `StateFlow<UiState<PokemonDetail>>`, `retry()`); `PokemonDetailScreen` with the HUD header,
+  segmented tabs (selection survives config change via `rememberSaveable`), and all four panes —
+  Stats (shared `StatBar` + total), Moves (type badge + category color + power/acc/pp), About
+  (flavor, height/weight/category/abilities grid, catch-rate bar), Evo (horizontally-scrolling
+  nodes + chevrons + condition; "does not evolve" fallback). Loading = skeleton header+tabs+rows;
+  Error = retry state. Wired into `PokedexNavHost` (replaced the Detail placeholder; back via
+  `popBackStack`). Move-category colors taken from the wireframe `catColor`. Height/weight
+  converted from PokéAPI tenths. The wireframe's favorite-star control was omitted (no favorites
+  feature to back it); the back button is functional.
+- All user-facing strings added to `strings.xml`.
+- **Tests**: `PokemonDetailViewModelTest` (loads detail for the saved-state id; failure→Error→
+  retry→Success). Updated the list test's `FakeRepository` for the new interface method.
+- Verified: `gradlew :core:domain:test :app-phone:testDebugUnitTest :app-phone:assembleDebug
+  :app-tv:assembleDebug` → BUILD SUCCESSFUL; all unit tests pass.

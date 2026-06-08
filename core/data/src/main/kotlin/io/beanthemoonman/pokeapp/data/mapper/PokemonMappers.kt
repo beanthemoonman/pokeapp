@@ -1,8 +1,16 @@
 package io.beanthemoonman.pokeapp.data.mapper
 
+import com.google.gson.Gson
+import io.beanthemoonman.pokeapp.data.local.entity.PokemonDetailEntity
 import io.beanthemoonman.pokeapp.data.local.entity.PokemonEntity
+import io.beanthemoonman.pokeapp.data.remote.dto.MoveDto
 import io.beanthemoonman.pokeapp.data.remote.dto.PokemonDetailDto
+import io.beanthemoonman.pokeapp.data.remote.dto.PokemonSpeciesDto
+import io.beanthemoonman.pokeapp.domain.model.EvolutionStage
+import io.beanthemoonman.pokeapp.domain.model.MoveCategory
+import io.beanthemoonman.pokeapp.domain.model.MoveInfo
 import io.beanthemoonman.pokeapp.domain.model.Pokemon
+import io.beanthemoonman.pokeapp.domain.model.PokemonDetail
 import io.beanthemoonman.pokeapp.domain.model.Stats
 import io.beanthemoonman.pokeapp.domain.model.Type
 
@@ -42,3 +50,63 @@ fun PokemonEntity.toDomain(): Pokemon = Pokemon(
     height = height,
     weight = weight
 )
+
+// ── Full-detail mappers ──────────────────────────────────────────────────────
+
+/** First English genus ("Flame Pokémon"), or a blank fallback. */
+fun PokemonSpeciesDto.englishGenus(): String =
+    genera.firstOrNull { it.language.name == ENGLISH }?.genus.orEmpty()
+
+/** First English flavor text, with the API's hard line breaks normalized to spaces. */
+fun PokemonSpeciesDto.englishFlavor(): String =
+    flavorTextEntries.firstOrNull { it.language.name == ENGLISH }
+        ?.flavorText
+        ?.replace('\n', ' ')
+        ?.replace('', ' ') // form feed PokéAPI uses between words
+        ?.trim()
+        .orEmpty()
+
+fun MoveDto.toMoveInfo(level: Int): MoveInfo = MoveInfo(
+    name = name.toTitle(),
+    type = Type.fromApiName(type.name),
+    category = when (damageClass?.name) {
+        "physical" -> MoveCategory.PHYSICAL
+        "special" -> MoveCategory.SPECIAL
+        else -> MoveCategory.STATUS
+    },
+    power = power,
+    accuracy = accuracy,
+    pp = pp ?: 0,
+    level = level
+)
+
+fun PokemonDetail.toEntity(gson: Gson, cachedAt: Long): PokemonDetailEntity = PokemonDetailEntity(
+    id = pokemon.id,
+    genus = genus,
+    flavorText = flavorText,
+    abilities = abilities.joinToString(ABILITY_SEPARATOR),
+    captureRate = captureRate,
+    movesJson = gson.toJson(moves),
+    evolutionJson = gson.toJson(evolution),
+    cachedAt = cachedAt
+)
+
+/** Rebuilds the aggregate from the cached row plus the already-cached base [Pokemon]. */
+fun PokemonDetailEntity.toDomain(base: Pokemon, gson: Gson): PokemonDetail = PokemonDetail(
+    pokemon = base,
+    genus = genus,
+    flavorText = flavorText,
+    abilities = if (abilities.isEmpty()) emptyList() else abilities.split(ABILITY_SEPARATOR),
+    captureRate = captureRate,
+    moves = gson.fromJson(movesJson, Array<MoveInfo>::class.java).orEmpty().toList(),
+    evolution = gson.fromJson(evolutionJson, Array<EvolutionStage>::class.java).orEmpty().toList()
+)
+
+/** Turns a PokéAPI slug like "fire-punch" into a display title "Fire Punch". */
+fun String.toTitle(): String =
+    split('-', ' ').joinToString(" ") { word ->
+        word.replaceFirstChar { it.uppercase() }
+    }
+
+private const val ENGLISH = "en"
+private const val ABILITY_SEPARATOR = "|"

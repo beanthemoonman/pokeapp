@@ -1,6 +1,7 @@
 package io.beanthemoonman.pokeapp.domain.repository
 
 import io.beanthemoonman.pokeapp.domain.model.Pokemon
+import io.beanthemoonman.pokeapp.domain.model.PokemonDetail
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -22,6 +23,14 @@ interface PokemonRepository {
     suspend fun searchPokemon(query: String, dexEnd: Int): List<Pokemon>
 
     suspend fun getPokemonDetail(id: Int): Pokemon
+
+    /**
+     * Full detail for the detail screen: base [Pokemon] plus species text, level-up
+     * moves, and the evolution line. Cache-first — the aggregate is cached after the
+     * first fetch and rebuilt from the cache on subsequent opens.
+     */
+    suspend fun getPokemonDetailFull(id: Int): PokemonDetail
+
     fun getTeam(): Flow<List<Pokemon?>>
     suspend fun setTeamSlot(slot: Int, pokemonId: Int?)
 }
