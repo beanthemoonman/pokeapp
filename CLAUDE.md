@@ -32,6 +32,7 @@ and named design tokens. Do not invent layouts or component names — derive the
 Wireframe files (flat `.jsx`/`.js` sources from Claude Design, plus a rendered `.html`):
 - `wireframes/version-select.jsx` — ROOT generation selector (phone list + loading, TV grid). Shown first.
 - `wireframes/phone-list.jsx`, `wireframes/phone-detail.jsx`, `wireframes/phone-tools.jsx` — phone screens
+- `wireframes/phone-items.jsx`, `wireframes/phone-moves.jsx` — Items & Moves dictionary screens (list/loading/error + detail). Moves scope strictly by introduction generation; items are best-effort (PokéAPI lacks a reliable introduced-in-gen list). Phone bottom nav is Pokédex · Items · Moves · Team · Matchup (no "Saved").
 - `wireframes/tv-screens.jsx` — TV screens
 - `wireframes/components.jsx` — shared component specs (TypeBadge, StatBar, Sprite, nav chrome, GenerationCard, VersionChip)
 - `wireframes/foundations.jsx` — design-system reference (surface tokens, typography, type palette)

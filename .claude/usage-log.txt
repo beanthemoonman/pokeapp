@@ -26,7 +26,7 @@ Started in Chat and Design, can assume like $20 of use.
  Skills, subagents, plugins, and MCP servers
  No attribution data yet · accumulates as you use Claude
 
-
+6/8/2026
 This is noteworthy, because this is something that has happened to me over the course of using copilot
 a surprising amount.
  Now the screen UI. Let me update imports and wire query/searchState through, and make the search bar interactive:
@@ -36,5 +36,50 @@ a surprising amount.
  ✻ Churned for 4m 13s
 
  ❯ Please continue
+
+ ● API Error: Output blocked by content filtering policy
+
+Happened twice
+ Now the screen — the largest piece. Let me write it matching the wireframe layout.
+
+ ● API Error: Output blocked by content filtering policy
+
+ ✻ Cooked for 3m 49s
+
+A third time!! What is happening??
+ I have all I need. Let me add the strings, then write the TeamScreen, then wire it into the nav host.
+
+ ● Update(app-phone\src\main\res\values\strings.xml)
+ Added 22 lines
+     <string name="typecalc_group_empty">None</string>
+     <string name="typecalc_error">Couldn\'t build the matchup chart.</string>
+
+     <!-- Team Builder -->
+     <string name="team_title">Team Builder</string>
+     <string name="team_count">%1$d / 6</string>
+     <string name="team_slot_add">Add</string>
+     <string name="team_slot_remove">Remove from team</string>
+     <string name="team_add_fab">Add Pokémon</string>
+     <string name="team_coverage_defensive">Defensive Coverage</string>
+     <string name="team_coverage_weak_points">%1$d weak points</string>
+     <string name="team_coverage_legend_shared">Shared weakness</string>
+     <string name="team_coverage_legend_covered">Covered</string>
+     <string name="team_coverage_offensive_gaps">Offensive gaps</string>
+     <string name="team_coverage_offensive_hint">not hit super-effectively</string>
+     <string name="team_coverage_offensive_none">Every type is covered.</string>
+     <string name="team_coverage_empty">Add a Pokémon to see your team\'s type coverage.</string>
+     <string name="team_picker_title_add">Add to slot %1$d</string>
+     <string name="team_picker_title_replace">Replace slot %1$d</string>
+     <string name="team_picker_close">Close</string>
+     <string name="team_picker_hint">Search name or №</string>
+     <string name="team_picker_prompt">Search to add a Pokémon to your team.</string>
+     <string name="team_picker_empty">Nothing matches “%1$s”.</string>
+     <string name="team_picker_error">Couldn\'t search right now. Try again.</string>
+
+     <!-- Bottom navigation -->
+     <string name="nav_dex">Dex</string>
+     <string name="nav_team">Team</string>
+
+ Now the main screen file:
 
  ● API Error: Output blocked by content filtering policy

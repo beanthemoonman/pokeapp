@@ -213,11 +213,77 @@
   // ── Team builder sample ─────────────────────────────────────
   const TEAM = [6, 9, 3, 25, 143, null].map((d) => (d ? byDex(d) : null));
 
+  // ── Items dictionary sample ─────────────────────────────────
+  // Shape mirrors PokeAPI `item`: { cost, category, effect_entries (shortEffect),
+  // flavor_text_entries (flavor) }. `category` ids are real PokeAPI item-category
+  // names. `gen` = generation introduced (best-effort — PokeAPI items lack a
+  // reliable introduced-in list; see itemsForGen).
+  const I = (id, name, category, cost, gen, shortEffect, flavor) =>
+    ({ id, name, category, cost, gen, shortEffect, flavor });
+  const ITEMS = [
+    I(1,  'Master Ball',     'standard-balls', 0,    1, 'Catches any wild Pokémon without fail.',                'The best Ball with the ultimate performance. It will catch any wild Pokémon without fail.'),
+    I(4,  'Poké Ball',       'standard-balls', 200,  1, 'A standard ball used to catch wild Pokémon.',           'A device for catching wild Pokémon. It is thrown like a ball at a Pokémon.'),
+    I(17, 'Potion',          'healing',        300,  1, 'Restores 20 HP to a single Pokémon.',                   'A spray-type medicine for treating wounds. It restores the HP of one Pokémon by 20.'),
+    I(23, 'Full Restore',    'healing',        3000, 1, 'Fully restores HP and cures all status conditions.',    'A medicine that fully restores the HP and heals any status conditions of one Pokémon.'),
+    I(50, 'Rare Candy',      'medicine',       0,    1, 'Raises a Pokémon’s level by one.',                  'A candy packed with energy. It raises the level of a single Pokémon by one.'),
+    I(80, 'Fire Stone',      'evolution',      3000, 1, 'Evolves certain Fire-type Pokémon.',                    'A peculiar stone that makes certain species of Pokémon evolve. It has a fiery orange heart.'),
+    I(81, 'Thunder Stone',   'evolution',      3000, 1, 'Evolves certain Electric-type Pokémon.',                'A peculiar stone that makes certain species of Pokémon evolve. It has a thunderbolt pattern.'),
+    I(126,'Leftovers',       'held-items',     0,    2, 'Holder restores a little HP each turn.',                'An item to be held by a Pokémon. The holder’s HP is slowly but steadily restored throughout battle.'),
+    I(213,'Choice Band',     'held-items',     0,    3, 'Boosts Attack but locks the holder into one move.',     'An item to be held by a Pokémon. This curious headband boosts Attack but only allows the use of one move.'),
+    I(217,'Life Orb',        'held-items',     0,    4, 'Boosts move power at the cost of some HP each hit.',     'An item to be held by a Pokémon. It boosts the power of moves, but at the cost of some HP on each hit.'),
+    I(229,'Charizardite X',  'mega-stones',    0,    6, 'Lets Charizard Mega Evolve into Mega Charizard X.',     'One of the mysterious Mega Stones. Have Charizard hold it, and it can Mega Evolve during battle.'),
+    I(945,'Tera Orb',        'key-items',      0,    9, 'Lets a Pokémon Terastallize when fully charged.',       'A device that allows a Pokémon to Terastallize. It must be charged by exposure to crystal energy.'),
+  ];
+  const itemById = (id) => ITEMS.find((it) => it.id === id);
+
+  // Filter-chip metadata for the Items list. `all` first, then real categories.
+  const ITEM_CATEGORIES = [
+    { id: 'all',             label: 'All' },
+    { id: 'standard-balls',  label: 'Poké Balls' },
+    { id: 'healing',         label: 'Healing' },
+    { id: 'medicine',        label: 'Medicine' },
+    { id: 'evolution',       label: 'Evolution' },
+    { id: 'held-items',      label: 'Held' },
+    { id: 'mega-stones',     label: 'Mega Stones' },
+    { id: 'key-items',       label: 'Key Items' },
+  ];
+
+  // ── Moves dictionary sample ─────────────────────────────────
+  // Shape mirrors PokeAPI `move`: { type, damage_class (cat), power, accuracy (acc),
+  // pp, generation (gen), effect_entries (shortEffect) }.
+  const M = (id, name, type, cat, power, acc, pp, gen, shortEffect) =>
+    ({ id, name, type, cat, power, acc, pp, gen, shortEffect });
+  const MOVES = [
+    M(7,   'Fire Punch',    'fire',     'physical', 75,  100, 15, 1, 'Has a 10% chance to burn the target.'),
+    M(53,  'Flamethrower',  'fire',     'special',  90,  100, 15, 1, 'Has a 10% chance to burn the target.'),
+    M(63,  'Hyper Beam',    'normal',   'special',  150, 90,  5,  1, 'The user must recharge on the turn after it hits.'),
+    M(85,  'Thunderbolt',   'electric', 'special',  90,  100, 15, 1, 'Has a 10% chance to paralyze the target.'),
+    M(94,  'Psychic',       'psychic',  'special',  90,  100, 10, 1, 'Has a 10% chance to lower the target’s Sp. Def.'),
+    M(156, 'Rest',          'psychic',  'status',   null, null, 5, 1, 'The user sleeps for 2 turns, fully restoring HP and curing status.'),
+    M(202, 'Giga Drain',    'grass',    'special',  75,  100, 10, 2, 'Heals the user by half the damage dealt.'),
+    M(225, 'Dragon Breath', 'dragon',   'special',  60,  100, 20, 2, 'Has a 30% chance to paralyze the target.'),
+    M(347, 'Calm Mind',     'psychic',  'status',   null, null, 20, 3, 'Raises the user’s Sp. Atk and Sp. Def by one stage.'),
+    M(403, 'Air Slash',     'flying',   'special',  75,  95,  15, 4, 'Has a 30% chance to make the target flinch.'),
+    M(525, 'Bulldoze',      'ground',   'physical', 60,  100, 20, 5, 'Lowers the target’s Speed by one stage.'),
+    M(796, 'Tera Blast',    'normal',   'special',  80,  100, 10, 9, 'Changes type to match the user’s Tera Type.'),
+  ];
+  const moveById = (id) => MOVES.find((m) => m.id === id);
+
+  // ── Dictionary gen-scoping ──────────────────────────────────
+  // Moves scope cleanly by introduction generation (PokeAPI move.generation).
+  const movesForGen = (gen) => MOVES.filter((m) => m.gen <= gen);
+  // Items: best-effort. PokeAPI items have no reliable introduced-in list, so we
+  // filter on the sample `gen` where known and include anything ungated.
+  const itemsForGen = (gen) => ITEMS.filter((it) => it.gen == null || it.gen <= gen);
+
   window.PDX = {
     TYPES, STATS, STAT_MAX, POKEMON, byDex, CHART, eff, groupEffectiveness, TEAM,
     typeIds: Object.keys(TYPES),
     // generations + per-gen type system
     GENERATIONS, genById, currentGen, dexForGen,
     TYPE_ROSTER, eraOf, typesForGen, CHART_OVERRIDES, effGen, groupEffectivenessGen, groupDefenseGen,
+    // items + moves dictionaries
+    ITEMS, itemById, ITEM_CATEGORIES, itemsForGen,
+    MOVES, moveById, movesForGen,
   };
 })();

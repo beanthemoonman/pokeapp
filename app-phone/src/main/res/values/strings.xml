@@ -84,6 +84,27 @@
     <string name="typecalc_group_empty">None</string>
     <string name="typecalc_error">Couldn\'t build the matchup chart.</string>
 
+    <!-- Team Builder -->
+    <string name="team_title">Team Builder</string>
+    <string name="team_count">%1$d / 6</string>
+    <string name="team_slot_add">Add</string>
+    <string name="team_slot_remove">Remove from team</string>
+    <string name="team_coverage_defensive">Defensive Coverage</string>
+    <string name="team_coverage_weak_points">%1$d weak points</string>
+    <string name="team_coverage_legend_shared">Shared weakness</string>
+    <string name="team_coverage_legend_covered">Covered</string>
+    <string name="team_coverage_offensive_gaps">Offensive gaps</string>
+    <string name="team_coverage_offensive_hint">not hit super-effectively</string>
+    <string name="team_coverage_offensive_none">Every type is covered.</string>
+    <string name="team_coverage_empty">Add a Pokémon to see your team\'s type coverage.</string>
+    <string name="team_picker_title_add">Add to slot %1$d</string>
+    <string name="team_picker_title_replace">Replace slot %1$d</string>
+    <string name="team_picker_close">Close</string>
+    <string name="team_picker_hint">Search name or №</string>
+    <string name="team_picker_prompt">Search to add a Pokémon to your team.</string>
+    <string name="team_picker_empty">Nothing matches “%1$s”.</string>
+    <string name="team_picker_error">Couldn\'t search right now. Try again.</string>
+
     <!-- Bottom navigation -->
     <string name="nav_dex">Dex</string>
     <string name="nav_team">Team</string>

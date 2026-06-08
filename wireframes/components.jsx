@@ -112,6 +112,8 @@ const Ic = {
   swords: (p) => <svg viewBox="0 0 20 20" width={p.s||18} height={p.s||18} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3l6.5 6.5M14 14l3 3M12 3l-3 3M14 6l3-3M3 14l3 3M9 11l-3 3"/></svg>,
   alert:  (p) => <svg viewBox="0 0 20 20" width={p.s||18} height={p.s||18} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3l7.5 13H2.5L10 3z"/><path d="M10 8.5v3.5M10 14.3v.2"/></svg>,
   star:   (p) => <svg viewBox="0 0 20 20" width={p.s||18} height={p.s||18} fill={p.fill||'none'} stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"><path d="M10 2.5l2.3 4.7 5.2.8-3.8 3.7.9 5.2L10 14.6 5.4 17l.9-5.2L2.5 8l5.2-.8z"/></svg>,
+  bag:    (p) => <svg viewBox="0 0 20 20" width={p.s||18} height={p.s||18} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h12l-1 9.5a1 1 0 0 1-1 .9H6a1 1 0 0 1-1-.9L4 7z"/><path d="M7 7V5.5A3 3 0 0 1 13 5.5V7"/></svg>,
+  move:   (p) => <svg viewBox="0 0 20 20" width={p.s||18} height={p.s||18} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M10 2.5L12 8l5.5 2L12 12l-2 5.5L8 12l-5.5-2L8 8z"/></svg>,
 };
 
 // ── phone chrome ─────────────────────────────────────────────
@@ -137,9 +139,10 @@ function StatusBar({ dark = true }) {
 function BottomNav({ active = 'dex' }) {
   const tabs = [
     { id: 'dex', label: 'Pokédex', icon: Ic.grid },
+    { id: 'items', label: 'Items', icon: Ic.bag },
+    { id: 'moves', label: 'Moves', icon: Ic.move },
     { id: 'team', label: 'Team', icon: Ic.team },
     { id: 'matchup', label: 'Matchup', icon: Ic.swords },
-    { id: 'fav', label: 'Saved', icon: Ic.star },
   ];
   return (
     <div style={{ flex: '0 0 auto', borderTop: '1px solid var(--line)', background: 'var(--surface)',

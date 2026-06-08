@@ -310,3 +310,31 @@ already maps every attacking type. Removed it; the screen is now a pure defensiv
   ×4-Rock/×0-Ground stacking, and 2-defender cap/eviction/clear cases.
 - Verified: `gradlew :core:domain:test :app-phone:testDebugUnitTest :app-phone:assembleDebug`
   → BUILD SUCCESSFUL; all unit tests pass.
+
+## TeamSlotGrid.kt
+Added stateless TeamSlotGrid composable (app-phone ui/team): 2x3 grid of six team slots. Filled slots show accent gradient, dex #, sprite, name, type stripes, and a remove affordance; empty slots show a dashed add tile. Tapping a slot calls onSlotClick(index); remove calls onRemove(index). Uses strings team_slot_add/team_slot_remove and ui-common tokens/PokemonSprite. Previewable.
+
+## TeamCoveragePanel.kt
+Added stateless TeamCoveragePanel composable (app-phone ui/team) rendering a TeamCoverage. Empty team shows team_coverage_empty. Defensive section: 6-col roster grid highlighting types with defensiveWeaknesses>0 (count badge for shared weaknesses), header + team_coverage_weak_points from weakPointCount, shared/covered legend. Offensive section: offensiveGaps as soft TypeBadges + hint, or team_coverage_offensive_none when empty. All values read off the passed TeamCoverage; no computation or hardcoded type data.
+
+## TeamPickerSheet.kt
+Added stateless TeamPickerSheet (app-phone ui/team): a ModalBottomSheet driven by TeamPickerUiState. Renders nothing when Closed; when Open shows title (team_picker_title_add/_replace by replacing, slot+1), a search field bound to query (onQueryChange, clear button), an optional Remove action (team_slot_remove -> onRemove(slot)) when replacing, and the PickerResults body: Idle->team_picker_prompt, Loading->spinner, Empty->team_picker_empty(query), Error->team_picker_error, Results->tappable rows calling onSelect(Pokemon). Reuses list screen SearchBar/ListRow idiom. onDismiss wired to sheet dismiss.
+
+## TeamScreen.kt
+Added TeamScreen route composable (app-phone ui/team) wiring the pieces to TeamViewModel via hiltViewModel. Collects state + picker with collectAsStateWithLifecycle. Scaffold with TopAppBar (team_title + team_count from filledCount) and Extended FAB (team_add_fab -> openAddPicker). Loading->spinner, Error->message, Success->scrollable TeamSlotGrid + TeamCoveragePanel. Renders TeamPickerSheet (self-gates on Closed). Wired: slot tap->openPicker, slot remove->removeSlot, query->onPickerQueryChange, select->selectPokemon, picker remove->removeSlot, dismiss->closePicker. Completes the Team Builder UI.
+
+## Build fix
+Built :app-phone:assembleDebug. Fixed a missing import in TeamScreen.kt (androidx.compose.runtime.getValue) that broke the collectAsStateWithLifecycle by delegates, which cascaded into UiState.Success cast/type-argument errors. Added the import; build now passes (BUILD SUCCESSFUL).
+
+## Remove Team FAB
+Removed the extraneous "Add Pokemon" ExtendedFloatingActionButton from TeamScreen (adding to a slot is done by tapping a slot tile -> openPicker). Dropped now-unused imports. openAddPicker() and string team_add_fab are now unused but left in place. Build passes.
+
+## Cleanup orphaned FAB refs
+Deleted unused TeamViewModel.openAddPicker() and the orphaned team_add_fab string from strings.xml (both left over from the removed Add Pokemon FAB). Build passes.
+
+## Wireframes: Items & Moves dictionaries
+Confirmed PokeAPI v2 supports both views (move endpoint: power/pp/accuracy/type/damage_class/generation; item endpoint: cost/category/effect/sprites — noted items lack a reliable introduced-in-gen list, so item gen-scoping is best-effort while moves scope strictly). Added two new phone dictionary mockups to /wireframes, mirroring the Pokédex List (searchable list + filter chips + tappable rows → detail, with loading-skeleton and error states):
+- data.js: added ITEMS, ITEM_CATEGORIES, MOVES sample datasets + itemById/moveById and movesForGen/itemsForGen helpers; exported on window.PDX.
+- components.jsx: BottomNav now reads Pokédex · Items · Moves · Team · Matchup (dropped "Saved"); added Ic.bag and Ic.move icons.
+- New phone-items.jsx (PhoneItems/Loading/Error + ItemDetail) and phone-moves.jsx (PhoneMoves/Loading/Error + MoveDetail).
+- Registered both as new DCSections in app.jsx and added their <script> tags to "Pokédex App.html".

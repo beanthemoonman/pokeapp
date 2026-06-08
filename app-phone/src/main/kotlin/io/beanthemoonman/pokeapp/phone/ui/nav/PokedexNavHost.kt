@@ -29,6 +29,7 @@ import io.beanthemoonman.pokeapp.phone.ui.AppStartViewModel
 import io.beanthemoonman.pokeapp.phone.ui.StartState
 import io.beanthemoonman.pokeapp.phone.ui.detail.PokemonDetailScreen
 import io.beanthemoonman.pokeapp.phone.ui.list.PokemonListScreen
+import io.beanthemoonman.pokeapp.phone.ui.team.TeamScreen
 import io.beanthemoonman.pokeapp.phone.ui.typecalc.TypeMatchupScreen
 import io.beanthemoonman.pokeapp.phone.ui.version.VersionSelectScreen
 import io.beanthemoonman.pokeapp.ui.common.theme.PokedexColors
@@ -95,7 +96,7 @@ fun PokedexNavHost(startAtSelector: Boolean) {
                 )
             }
             composable(NavDestination.Tab.Team.route) {
-                PlaceholderScreen(R.string.nav_team)
+                TeamScreen()
             }
             composable(NavDestination.Tab.TypeCalc.route) {
                 TypeMatchupScreen()

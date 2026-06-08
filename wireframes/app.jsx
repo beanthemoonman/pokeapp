@@ -5,6 +5,8 @@ const {
   PhoneVersionSelect, PhoneVersionSelectLoading, TVVersionSelect,
   PhoneList, PhoneListLoading, PhoneListError,
   DetailB, DetailMoves, DetailAbout, DetailEvolution,
+  PhoneItems, PhoneItemsLoading, PhoneItemsError, ItemDetail,
+  PhoneMoves, PhoneMovesLoading, PhoneMovesError, MoveDetail,
   PhoneTeam, PhoneMatchup,
   TVBrowse, TVDetail, TVTeam,
 } = window;
@@ -48,6 +50,20 @@ function App() {
         <DCArtboard id="detail-moves" label="Moves tab" {...phoneAB}><Center><DetailMoves /></Center></DCArtboard>
         <DCArtboard id="detail-about" label="About tab" {...phoneAB}><Center><DetailAbout /></Center></DCArtboard>
         <DCArtboard id="detail-evo" label="Evolution tab" {...phoneAB}><Center><DetailEvolution /></Center></DCArtboard>
+      </DCSection>
+
+      <DCSection id="phone-items" title="Phone · Items Dictionary" subtitle="Searchable item list · generation-scoped · tap a row for detail">
+        <DCArtboard id="items" label="Items — loaded" {...phoneAB}><Center><PhoneItems /></Center></DCArtboard>
+        <DCArtboard id="items-loading" label="Items — loading (skeleton)" {...phoneAB}><Center><PhoneItemsLoading /></Center></DCArtboard>
+        <DCArtboard id="items-error" label="Items — error" {...phoneAB}><Center><PhoneItemsError /></Center></DCArtboard>
+        <DCArtboard id="item-detail" label="Item — detail" {...phoneAB}><Center><ItemDetail /></Center></DCArtboard>
+      </DCSection>
+
+      <DCSection id="phone-moves" title="Phone · Moves Dictionary" subtitle="Searchable move list · generation-scoped · tap a row for detail">
+        <DCArtboard id="moves" label="Moves — loaded" {...phoneAB}><Center><PhoneMoves /></Center></DCArtboard>
+        <DCArtboard id="moves-loading" label="Moves — loading (skeleton)" {...phoneAB}><Center><PhoneMovesLoading /></Center></DCArtboard>
+        <DCArtboard id="moves-error" label="Moves — error" {...phoneAB}><Center><PhoneMovesError /></Center></DCArtboard>
+        <DCArtboard id="move-detail" label="Move — detail" {...phoneAB}><Center><MoveDetail /></Center></DCArtboard>
       </DCSection>
 
       <DCSection id="phone-tools" title="Phone · Team & Matchup" subtitle="Team Builder + Type Matchup Calculator">
