@@ -30,11 +30,23 @@ corresponding wireframe. The wireframes are the source of truth for layout, comp
 and named design tokens. Do not invent layouts or component names — derive them from the wireframes.
 
 Wireframe files (flat `.jsx`/`.js` sources from Claude Design, plus a rendered `.html`):
+- `wireframes/version-select.jsx` — ROOT generation selector (phone list + loading, TV grid). Shown first.
 - `wireframes/phone-list.jsx`, `wireframes/phone-detail.jsx`, `wireframes/phone-tools.jsx` — phone screens
 - `wireframes/tv-screens.jsx` — TV screens
-- `wireframes/components.jsx` — shared component specs (TypeBadge, StatBar, Sprite, nav chrome)
+- `wireframes/components.jsx` — shared component specs (TypeBadge, StatBar, Sprite, nav chrome, GenerationCard, VersionChip)
 - `wireframes/foundations.jsx` — design-system reference (surface tokens, typography, type palette)
-- `wireframes/data.js` — type color tokens, stat metadata, type-effectiveness CHART, sample data
+- `wireframes/data.js` — type color tokens, stat metadata, per-generation type-effectiveness charts, GENERATIONS, sample data
+
+### Generation context (root selector)
+The app opens on a **generation selector** (`version-select.jsx`). The chosen generation is a global
+context that drives the rest of the app:
+- **Dex contents** = cumulative **National Dex #1..dexEnd** through that generation (Gen I = 1–151,
+  Gen II = 1–251, … Gen IX = 1–1025). See `GENERATIONS` in `data.js`.
+- **Type system is per-generation.** The roster changes (Gen I = 15 types; Gen II–V = 17, +Dark/+Steel;
+  Gen VI+ = 18, +Fairy) and several matchups differ by era. Values transcribed from PokéAPI
+  `type.past_damage_relations` (NOT invented) — see `CHART_OVERRIDES` / `effGen` / `typesForGen` in `data.js`.
+  This means `TypeEffectivenessMatrix` (below) must become **keyed by generation**; it stays static/hardcoded
+  and is still never fetched. (Domain/code refactor pending — wireframes done first.)
 
 ---
 

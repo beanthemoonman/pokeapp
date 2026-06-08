@@ -1,7 +1,10 @@
 /* phone-tools.jsx — Team Builder + Type Matchup Calculator */
 const { PhoneFrame, StatusBar, BottomNav, Fab, Sprite, TypeBadge, Ic, typeColor, typeName, hexA, dex3 } = window;
 const TEAM = window.PDX.TEAM;
-const TYPE_IDS = window.PDX.typeIds;
+// Roster + chart are scoped to the active generation (Gen I = 15 types, etc.).
+const PT_GEN = window.PDX.currentGen;
+const PT_GENINFO = window.PDX.genById(PT_GEN);
+const TYPE_IDS = window.PDX.typesForGen(PT_GEN);
 
 // ── Team Builder ─────────────────────────────────────────────
 function TeamSlot({ p }) {
@@ -107,7 +110,7 @@ function PhoneTeam() {
 
 // ── Type Matchup Calculator ──────────────────────────────────
 const ATK = 'fire';
-const GROUPS = window.PDX.groupEffectiveness(ATK);
+const GROUPS = window.PDX.groupEffectivenessGen(ATK, PT_GEN);
 const GROUP_META = [
   { key: 'super',   title: 'Super Effective', mult: '×2',  color: '#62C24A' },
   { key: 'normal',  title: 'Normal',          mult: '×1',  color: '#9AA0AC' },
@@ -135,7 +138,7 @@ function PhoneMatchup() {
       <StatusBar />
       <div style={{ padding: '4px 16px 12px', flex: '0 0 auto' }}>
         <h1 style={{ margin: 0, fontFamily: 'var(--f-display)', fontWeight: 700, fontSize: 26, letterSpacing: '-.02em', color: 'var(--text)' }}>Type Matchup</h1>
-        <div style={{ fontFamily: 'var(--f-mono)', fontSize: 11.5, color: 'var(--text-faint)', marginTop: 2 }}>ATTACKING · ALL DEFENDERS</div>
+        <div style={{ fontFamily: 'var(--f-mono)', fontSize: 11.5, color: 'var(--text-faint)', marginTop: 2 }}>ATTACKING · {TYPE_IDS.length} DEFENDERS · GEN {PT_GENINFO.label}</div>
       </div>
       <div style={{ flex: '0 0 auto', padding: '0 16px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
         <TypePicker label="Attacker" selected="fire" />

@@ -2,6 +2,7 @@
 const {
   DesignCanvas, DCSection, DCArtboard, DCPostIt,
   Foundations,
+  PhoneVersionSelect, PhoneVersionSelectLoading, TVVersionSelect,
   PhoneList, PhoneListLoading, PhoneListError,
   DetailB, DetailMoves, DetailAbout, DetailEvolution,
   PhoneTeam, PhoneMatchup,
@@ -24,6 +25,12 @@ const foundAB = { width: 940, height: 700, style: { background: 'transparent', b
 function App() {
   return (
     <DesignCanvas>
+      <DCSection id="root-select" title="Root · Version Select" subtitle="Pick a generation first — sets the cumulative National Dex + era type chart for the whole app">
+        <DCArtboard id="vs-phone" label="Phone — choose generation" {...phoneAB}><Center><PhoneVersionSelect /></Center></DCArtboard>
+        <DCArtboard id="vs-phone-loading" label="Phone — loading (skeleton)" {...phoneAB}><Center><PhoneVersionSelectLoading /></Center></DCArtboard>
+        <DCArtboard id="vs-tv" label="TV — choose generation (D-pad)" {...tvAB}><Center><TVVersionSelect /></Center></DCArtboard>
+      </DCSection>
+
       <DCSection id="foundations" title="Foundations" subtitle="Shared tokens & components — core/ui-common">
         <DCArtboard id="tokens" label="Tokens & Components" {...foundAB}>
           <Center><Foundations /></Center>

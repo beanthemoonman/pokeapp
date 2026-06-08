@@ -1,16 +1,17 @@
 /* tv-screens.jsx — Android TV (leanback) Browse, Detail, Team Builder.
    D-pad focus made explicit via the .pdx-focused ring (--fc = type color). */
 const { TVFrame, Sprite, TypeBadge, StatBar, Ic, typeColor, typeName, typeText, hexA, dex3 } = window;
-const TV_POKE = window.PDX.POKEMON;
+const TV_POKE = window.PDX.dexForGen(window.PDX.currentGen);
 const TV_CHAR = window.PDX.byDex(6);
 const TV_STATS = window.PDX.STATS;
 const TV_TEAM = window.PDX.TEAM;
+const TV_GEN = window.PDX.genById(window.PDX.currentGen);
+const TV_TYPES = window.PDX.typesForGen(window.PDX.currentGen);
 const TVFIRE = typeColor('fire');
 
 // ── shared sidebar ───────────────────────────────────────────
 function TVSidebar({ activeType = 'all' }) {
   const types = ['all', 'fire', 'water', 'grass', 'electric', 'psychic', 'ghost', 'dragon', 'fighting'];
-  const gens = ['Gen I', 'Gen II', 'Gen III', 'Gen IV'];
   return (
     <div style={{ width: 248, flex: '0 0 248px', height: '100%', background: 'var(--surface)', borderRight: '1px solid var(--line)',
       padding: '30px 22px', display: 'flex', flexDirection: 'column', gap: 30, boxSizing: 'border-box' }}>
@@ -38,13 +39,18 @@ function TVSidebar({ activeType = 'all' }) {
       </div>
       <div>
         <div style={{ fontFamily: 'var(--f-ui)', fontSize: 11, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--text-faint)', marginBottom: 14 }}>Generation</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {gens.map((g, i) => (
-            <span key={g} style={{ padding: '7px 13px', borderRadius: 8, fontFamily: 'var(--f-ui)', fontSize: 12.5, fontWeight: 600,
-              background: i === 0 ? hexA(TVFIRE, .16) : 'var(--surface-2)', color: i === 0 ? TVFIRE : 'var(--text-dim)',
-              boxShadow: i === 0 ? `inset 0 0 0 1.5px ${hexA(TVFIRE, .5)}` : 'none' }}>{g}</span>
-          ))}
+        {/* Active generation, chosen at the root selector. Re-open to switch. */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '12px 13px', borderRadius: 11,
+          background: hexA(TV_GEN.accent, .16), boxShadow: `inset 0 0 0 1.5px ${hexA(TV_GEN.accent, .5)}` }}>
+          <div style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: `linear-gradient(150deg, ${TV_GEN.accent}, ${hexA(TV_GEN.accent, .4)})`,
+            fontFamily: 'var(--f-display)', fontWeight: 700, fontSize: 13, color: '#15140f' }}>{TV_GEN.label}</div>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontFamily: 'var(--f-ui)', fontSize: 13.5, fontWeight: 700, color: 'var(--text)' }}>{TV_GEN.region}</div>
+            <div style={{ fontFamily: 'var(--f-mono)', fontSize: 10.5, color: 'var(--text-dim)' }}>#1–{TV_GEN.dexEnd}</div>
+          </div>
         </div>
+        <div style={{ fontFamily: 'var(--f-mono)', fontSize: 10.5, color: 'var(--text-faint)', marginTop: 8, letterSpacing: '.04em' }}>≡ MENU TO CHANGE</div>
       </div>
     </div>
   );
@@ -89,7 +95,7 @@ function TVBrowse() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
             <div>
               <h1 style={{ margin: 0, fontFamily: 'var(--f-display)', fontWeight: 700, fontSize: 30, letterSpacing: '-.02em', color: 'var(--text)' }}>Browse</h1>
-              <div style={{ fontFamily: 'var(--f-mono)', fontSize: 12.5, color: 'var(--text-faint)', marginTop: 4 }}>151 ENTRIES · KANTO</div>
+              <div style={{ fontFamily: 'var(--f-mono)', fontSize: 12.5, color: 'var(--text-faint)', marginTop: 4 }}>{TV_GEN.dexEnd} ENTRIES · NATIONAL THROUGH GEN {TV_GEN.label}</div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 18px', borderRadius: 12,
               background: 'var(--surface)', border: '1px solid var(--line)', color: 'var(--text-faint)', minWidth: 260 }}>
@@ -225,9 +231,9 @@ function TVTeam() {
         {/* bottom — coverage */}
         <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 24, minHeight: 0 }}>
           <div style={{ background: 'var(--surface)', borderRadius: 16, border: '1px solid var(--line)', padding: '22px 26px' }}>
-            <div style={{ fontFamily: 'var(--f-ui)', fontSize: 12, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--text-faint)', marginBottom: 18 }}>Defensive Coverage — all 18 types</div>
+            <div style={{ fontFamily: 'var(--f-ui)', fontSize: 12, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--text-faint)', marginBottom: 18 }}>Defensive Coverage — all {TV_TYPES.length} types</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, 1fr)', gap: 10 }}>
-              {window.PDX.typeIds.map((t) => {
+              {TV_TYPES.map((t) => {
                 const w = TV_WEAK[t]; const c = typeColor(t);
                 return (
                   <div key={t} style={{ aspectRatio: '1', borderRadius: 9, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',

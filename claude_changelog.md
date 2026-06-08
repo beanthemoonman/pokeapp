@@ -41,3 +41,20 @@
   - All user-facing strings in `strings.xml`.
 - **Tests**: `PokemonListViewModelTest` covers Success / empty→Error / flow-throws→Error via a fake repository + real use case.
 - Verified: `gradlew :core:data:assembleDebug :app-phone:assembleDebug :core:domain:test :app-phone:testDebugUnitTest` → BUILD SUCCESSFUL; all unit tests pass, no warnings.
+
+### Wireframe rework — root generation/version selector
+
+Reworked the wireframes so a **generation selector is the root screen**; the chosen generation is global context for the rest of the app. Decisions (with the user): unit = **Generation**; dex = **cumulative National Dex #1..N through the gen**; type chart = **per-generation**.
+
+- **`wireframes/data.js`**:
+  - Added `GENERATIONS` (Gen I–IX: region, cumulative `dexEnd`, placeholder accent from existing type tokens, bundled `versions`), `genById`, `currentGen` (sample = 1), `dexForGen`.
+  - Added a **per-generation type system**: `TYPE_ROSTER` (15 / 17 / 18 by era), `eraOf`, `typesForGen`, `CHART_OVERRIDES`, gen-aware `effGen` / `groupEffectivenessGen`. Existing modern `CHART`/`eff`/`groupEffectiveness` kept.
+  - **Historical matchups were verified against PokéAPI `type.past_damage_relations`, not invented** (the earlier web summary had errors). Gen I: Bug↔Poison 2×, Ghost→Psychic 0×, Ice→Fire 1×. Gen II–V: Steel still resists Ghost & Dark (0.5×). Validated with a node harness — 23/23 assertions pass.
+- **`wireframes/components.jsx`**: new shared `GenerationCard` (phone list + TV grid, `focused`/`selected`/`size`) and `VersionChip` (header "active generation, tap to switch" pill).
+- **`wireframes/version-select.jsx`** (new): `PhoneVersionSelect`, `PhoneVersionSelectLoading` (skeleton), `TVVersionSelect` (D-pad grid).
+- **`phone-list.jsx`**: header now binds to the active gen ("NATIONAL · THROUGH GEN I", `/dexEnd`) + a `VersionChip`; list sliced via `dexForGen`.
+- **`tv-screens.jsx`**: sidebar "Generation" group replaced by the active-gen card + "≡ MENU TO CHANGE" re-open affordance; Browse subtitle dynamic; Team coverage grid uses `typesForGen` (roster-sized) instead of hardcoded 18.
+- **`phone-tools.jsx`**: Type Matchup + Team coverage use the active gen's roster and era chart (`groupEffectivenessGen`, `typesForGen`); subtitle shows "N DEFENDERS · GEN X".
+- **`foundations.jsx`**: added `GenerationCard` to the component reference; type-palette title notes the 15/17/18 roster.
+- **`app.jsx` + `Pokédex App.html`**: new first canvas section "Root · Version Select"; loads `version-select.jsx`.
+- **`CLAUDE.md`**: updated the wireframe file list and added a "Generation context" subsection, flagging that `TypeEffectivenessMatrix` must become **keyed by generation** (still static/hardcoded, still never fetched) in the upcoming code refactor.

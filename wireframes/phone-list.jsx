@@ -1,6 +1,7 @@
 /* phone-list.jsx — Pokédex List screen + loading/error states */
-const { PhoneFrame, StatusBar, BottomNav, Fab, Sprite, TypeBadge, Ic, typeColor } = window;
-const PL_DATA = window.PDX.POKEMON;
+const { PhoneFrame, StatusBar, BottomNav, Fab, Sprite, TypeBadge, Ic, typeColor, VersionChip } = window;
+const PL_GEN = window.PDX.genById(window.PDX.currentGen);
+const PL_DATA = window.PDX.dexForGen(window.PDX.currentGen);
 
 function SearchBar({ value = '' }) {
   return (
@@ -10,7 +11,7 @@ function SearchBar({ value = '' }) {
       <span style={{ fontFamily: 'var(--f-ui)', fontSize: 14.5, color: value ? 'var(--text)' : 'var(--text-faint)' }}>
         {value || 'Search name or №'}
       </span>
-      <span style={{ marginLeft: 'auto', fontFamily: 'var(--f-mono)', fontSize: 11, color: 'var(--text-faint)' }}>151</span>
+      <span style={{ marginLeft: 'auto', fontFamily: 'var(--f-mono)', fontSize: 11, color: 'var(--text-faint)' }}>{PL_GEN.dexEnd}</span>
     </div>
   );
 }
@@ -57,13 +58,14 @@ function ListRow({ p }) {
 function ListHeader() {
   return (
     <div style={{ padding: '4px 16px 12px', flex: '0 0 auto' }}>
+      <div style={{ marginBottom: 12 }}><VersionChip gen={PL_GEN} /></div>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 14 }}>
         <div>
           <h1 style={{ margin: 0, fontFamily: 'var(--f-display)', fontWeight: 700, fontSize: 28, letterSpacing: '-.02em', color: 'var(--text)' }}>Pokédex</h1>
-          <div style={{ fontFamily: 'var(--f-mono)', fontSize: 11.5, color: 'var(--text-faint)', marginTop: 2, letterSpacing: '.03em' }}>KANTO · GEN I</div>
+          <div style={{ fontFamily: 'var(--f-mono)', fontSize: 11.5, color: 'var(--text-faint)', marginTop: 2, letterSpacing: '.03em' }}>NATIONAL · THROUGH GEN {PL_GEN.label}</div>
         </div>
         <div style={{ fontFamily: 'var(--f-mono)', fontSize: 12, color: 'var(--text-dim)' }}>
-          <span style={{ color: 'var(--text)', fontSize: 18, fontWeight: 600 }}>16</span> / 151
+          <span style={{ color: 'var(--text)', fontSize: 18, fontWeight: 600 }}>16</span> / {PL_GEN.dexEnd}
         </div>
       </div>
       <div style={{ marginBottom: 12 }}><SearchBar /></div>

@@ -122,11 +122,85 @@
     return g;
   }
 
+  // ── Generations ─────────────────────────────────────────────
+  // The root selector picks a GENERATION; the dex it opens is the cumulative
+  // National Dex #1..dexEnd (everything through that generation).
+  // `accent` reuses existing type-color tokens — placeholder card accents,
+  // not official brand colors. `versions` are the games bundled in that gen.
+  const GENERATIONS = [
+    { id: 1, label: 'I',    region: 'Kanto',  dexEnd: 151,  accent: TYPES.fire.color,     versions: ['Red', 'Blue', 'Yellow'] },
+    { id: 2, label: 'II',   region: 'Johto',  dexEnd: 251,  accent: TYPES.electric.color, versions: ['Gold', 'Silver', 'Crystal'] },
+    { id: 3, label: 'III',  region: 'Hoenn',  dexEnd: 386,  accent: TYPES.water.color,    versions: ['Ruby', 'Sapphire', 'Emerald', 'FireRed', 'LeafGreen'] },
+    { id: 4, label: 'IV',   region: 'Sinnoh', dexEnd: 493,  accent: TYPES.ice.color,      versions: ['Diamond', 'Pearl', 'Platinum', 'HeartGold', 'SoulSilver'] },
+    { id: 5, label: 'V',    region: 'Unova',  dexEnd: 649,  accent: TYPES.dark.color,     versions: ['Black', 'White', 'Black 2', 'White 2'] },
+    { id: 6, label: 'VI',   region: 'Kalos',  dexEnd: 721,  accent: TYPES.fairy.color,    versions: ['X', 'Y', 'Omega Ruby', 'Alpha Sapphire'] },
+    { id: 7, label: 'VII',  region: 'Alola',  dexEnd: 809,  accent: TYPES.psychic.color,  versions: ['Sun', 'Moon', 'Ultra Sun', 'Ultra Moon', "Let's Go"] },
+    { id: 8, label: 'VIII', region: 'Galar',  dexEnd: 905,  accent: TYPES.fighting.color, versions: ['Sword', 'Shield', 'Brilliant Diamond', 'Shining Pearl', 'Legends: Arceus'] },
+    { id: 9, label: 'IX',   region: 'Paldea', dexEnd: 1025, accent: TYPES.dragon.color,   versions: ['Scarlet', 'Violet'] },
+  ];
+  const genById = (id) => GENERATIONS.find((g) => g.id === id);
+  // Sample "active" selection used by the in-app screens.
+  const currentGen = 1;
+  // Cumulative National Dex #1..dexEnd, sliced from the sample POKEMON set.
+  const dexForGen = (gen) => POKEMON.filter((p) => p.dex <= genById(gen).dexEnd);
+
+  // ── Per-generation type system ──────────────────────────────
+  // Type roster by era: Gen I = 15 types, Gen II–V = 17 (+Dark,+Steel),
+  // Gen VI+ = 18 (+Fairy). Buckets keyed by the first gen of each era.
+  const ALL_TYPE_IDS = Object.keys(TYPES); // dark, steel, fairy are the last three
+  const TYPE_ROSTER = {
+    1: ALL_TYPE_IDS.filter((t) => !['dark', 'steel', 'fairy'].includes(t)), // 15
+    2: ALL_TYPE_IDS.filter((t) => t !== 'fairy'),                           // 17 (Gen II–V)
+    6: ALL_TYPE_IDS.slice(),                                                // 18 (Gen VI+)
+  };
+  const eraOf = (gen) => (gen >= 6 ? 6 : gen >= 2 ? 2 : 1);
+  const typesForGen = (gen) => TYPE_ROSTER[eraOf(gen)];
+
+  // Historical overrides relative to the modern CHART, transcribed from PokéAPI
+  // `type.past_damage_relations` (NOT invented). attacker -> { defender: mult }.
+  const CHART_OVERRIDES = {
+    1: { // Generation I vs modern
+      bug:    { poison: 2 },  // Bug ↔ Poison were mutually super-effective
+      poison: { bug: 2 },
+      ghost:  { psychic: 0 }, // Psychic was immune to Ghost (the Gen-I quirk)
+      ice:    { fire: 1 },    // Fire did not yet resist Ice
+    },
+    2: { // Generations II–V vs modern: Steel still resisted Ghost & Dark
+      ghost: { steel: 0.5 },
+      dark:  { steel: 0.5 },
+    },
+    6: {}, // modern baseline (CHART as-is)
+  };
+
+  // gen-aware effectiveness. Types outside the era's roster don't exist → 1×.
+  function effGen(atk, def, gen) {
+    const era = eraOf(gen);
+    const roster = TYPE_ROSTER[era];
+    if (!roster.includes(atk) || !roster.includes(def)) return 1;
+    const ov = CHART_OVERRIDES[era][atk];
+    if (ov && ov[def] != null) return ov[def];
+    return CHART[atk] && CHART[atk][def] != null ? CHART[atk][def] : 1;
+  }
+  function groupEffectivenessGen(atk, gen) {
+    const g = { super: [], normal: [], notvery: [], immune: [] };
+    typesForGen(gen).forEach((def) => {
+      const m = effGen(atk, def, gen);
+      if (m === 0) g.immune.push(def);
+      else if (m > 1) g.super.push(def);
+      else if (m < 1) g.notvery.push(def);
+      else g.normal.push(def);
+    });
+    return g;
+  }
+
   // ── Team builder sample ─────────────────────────────────────
   const TEAM = [6, 9, 3, 25, 143, null].map((d) => (d ? byDex(d) : null));
 
   window.PDX = {
     TYPES, STATS, STAT_MAX, POKEMON, byDex, CHART, eff, groupEffectiveness, TEAM,
     typeIds: Object.keys(TYPES),
+    // generations + per-gen type system
+    GENERATIONS, genById, currentGen, dexForGen,
+    TYPE_ROSTER, eraOf, typesForGen, CHART_OVERRIDES, effGen, groupEffectivenessGen,
   };
 })();

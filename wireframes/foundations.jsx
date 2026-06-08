@@ -1,8 +1,9 @@
 /* foundations.jsx — design-system reference card (handoff to Claude Code).
    Token names mirror the Kotlin Color/dimens they should map to. */
-const { TypeBadge, StatBar, Sprite, typeColor, typeName, hexA } = window;
+const { TypeBadge, StatBar, Sprite, GenerationCard, typeColor, typeName, hexA } = window;
 const F_TYPES = window.PDX.TYPES;
 const F_POKE = window.PDX.byDex(6);
+const F_GEN = window.PDX.genById(1);
 
 function Swatch({ name, hex, sub }) {
   return (
@@ -68,11 +69,14 @@ function Foundations() {
               </div>
             </div>
           </FCol>
+          <FCol title="Root selector — GenerationCard">
+            <GenerationCard gen={F_GEN} size="md" selected />
+          </FCol>
         </div>
 
         {/* right: type palette + components */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 26, minHeight: 0 }}>
-          <FCol title="Type color tokens — PokemonType.*">
+          <FCol title="Type color tokens — PokemonType.* (roster 15 / 17 / 18 per gen)">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 8 }}>
               {Object.keys(F_TYPES).map((t) => (
                 <div key={t} style={{ borderRadius: 8, overflow: 'hidden', background: 'var(--surface)', border: '1px solid var(--line)' }}>

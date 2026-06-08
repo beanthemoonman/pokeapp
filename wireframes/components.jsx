@@ -209,7 +209,58 @@ function Eyebrow({ children, color = 'var(--text-faint)' }) {
     textTransform: 'uppercase', color }}>{children}</div>;
 }
 
+// ── GenerationCard ───────────────────────────────────────────
+// Root version-selector tile (phone list + TV grid). size: 'md' | 'lg'.
+// focused → D-pad ring (TV); selected → persistent accent border (phone).
+// `gen` is an entry from window.PDX.GENERATIONS.
+function GenerationCard({ gen, focused = false, selected = false, size = 'md' }) {
+  const c = gen.accent;
+  const lg = size === 'lg';
+  const lit = focused || selected;
+  return (
+    <div className={focused ? 'pdx-focused' : ''} style={{ ['--fc']: c,
+      display: 'flex', alignItems: 'center', gap: lg ? 16 : 13, width: '100%', boxSizing: 'border-box',
+      padding: lg ? 16 : 13, borderRadius: 16, position: 'relative', overflow: 'hidden',
+      background: lit ? `linear-gradient(150deg, ${hexA(c, .2)}, var(--surface))` : 'var(--surface)',
+      border: `1px solid ${lit ? hexA(c, .5) : 'var(--line)'}`,
+      transform: focused ? 'translateY(-3px) scale(1.02)' : 'none', transition: 'transform .15s' }}>
+      {/* region crest placeholder — roman numeral on accent */}
+      <div style={{ width: lg ? 60 : 50, height: lg ? 60 : 50, borderRadius: 14, flexShrink: 0,
+        background: `radial-gradient(120% 120% at 50% 30%, ${c}, ${hexA(c, .35)})`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `inset 0 0 0 1px ${hexA(c, .5)}` }}>
+        <span style={{ fontFamily: 'var(--f-display)', fontWeight: 700, fontSize: lg ? 20 : 17, color: '#15140f' }}>{gen.label}</span>
+      </div>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontFamily: 'var(--f-ui)', fontSize: 10.5, fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', color: hexA(c, .95) }}>Generation {gen.label}</div>
+        <div style={{ fontFamily: 'var(--f-display)', fontWeight: 700, fontSize: lg ? 20 : 17, color: 'var(--text)', letterSpacing: '-.01em', margin: '2px 0 4px' }}>{gen.region}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontFamily: 'var(--f-mono)', fontSize: 11, color: 'var(--text-dim)' }}>#1–{gen.dexEnd}</span>
+          <span style={{ fontFamily: 'var(--f-mono)', fontSize: 11, color: 'var(--text-faint)' }}>· {gen.dexEnd} entries</span>
+        </div>
+        <div style={{ fontFamily: 'var(--f-ui)', fontSize: 11, color: 'var(--text-faint)', marginTop: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{gen.versions.join(' · ')}</div>
+      </div>
+      <div style={{ color: lit ? c : 'var(--text-faint)', flexShrink: 0 }}><Ic.chevR s={18} /></div>
+    </div>
+  );
+}
+
+// ── VersionChip ──────────────────────────────────────────────
+// Header pill showing the active generation; tap to re-open the root selector.
+function VersionChip({ gen }) {
+  const c = gen.accent;
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '6px 10px 6px 7px', borderRadius: 999,
+      background: hexA(c, .14), border: `1px solid ${hexA(c, .4)}`, cursor: 'pointer' }}>
+      <span style={{ width: 17, height: 17, borderRadius: 5, background: `linear-gradient(150deg, ${c}, ${hexA(c, .5)})`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--f-display)', fontWeight: 700, fontSize: 9, color: '#15140f' }}>{gen.label}</span>
+      <span style={{ fontFamily: 'var(--f-ui)', fontSize: 11.5, fontWeight: 700, color: 'var(--text)', letterSpacing: '.02em' }}>{gen.region}</span>
+      <Ic.chevR s={13} />
+    </span>
+  );
+}
+
 Object.assign(window, {
   TypeBadge, StatBar, Sprite, Ic, StatusBar, BottomNav, Fab, PhoneFrame, TVFrame, Eyebrow,
+  GenerationCard, VersionChip,
   typeColor, typeName, typeText, dex3, hatch, hexA, Eyebrow,
 });
