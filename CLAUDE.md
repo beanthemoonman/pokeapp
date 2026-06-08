@@ -95,8 +95,9 @@ implementation("androidx.navigation:navigation-compose:2.9.0")
 implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0")
 
 // Hilt (annotation processing via KSP, not kapt)
-implementation("com.google.dagger:hilt-android:2.56.1")
-ksp("com.google.dagger:hilt-compiler:2.56.1")
+// 2.59.2 — first Hilt line whose Gradle plugin is compatible with AGP 9.
+implementation("com.google.dagger:hilt-android:2.59.2")
+ksp("com.google.dagger:hilt-compiler:2.59.2")
 
 // Retrofit
 implementation("com.squareup.retrofit2:retrofit:2.11.0")

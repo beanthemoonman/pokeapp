@@ -21,8 +21,8 @@ navigationCompose = "2.9.0"
 # Lifecycle / ViewModel
 lifecycle = "2.9.0"
 
-# Hilt
-hilt = "2.56.1"
+# Hilt (2.59.2 is the first line with a Gradle plugin compatible with AGP 9)
+hilt = "2.59.2"
 hiltNavigationCompose = "1.2.0"
 
 # Retrofit
@@ -38,6 +38,7 @@ coil = "2.7.0"
 # Core
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+javax-inject = { group = "javax.inject", name = "javax.inject", version = "1" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 
 # Compose (BOM-managed)

@@ -1,0 +1,118 @@
+package io.beanthemoonman.pokeapp.phone.ui.nav
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import io.beanthemoonman.pokeapp.phone.R
+import io.beanthemoonman.pokeapp.phone.ui.list.PokemonListScreen
+import io.beanthemoonman.pokeapp.ui.common.theme.PokedexColors
+import io.beanthemoonman.pokeapp.ui.common.theme.color
+import io.beanthemoonman.pokeapp.domain.model.Type
+
+@Composable
+fun PokedexNavHost() {
+    val navController = rememberNavController()
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route
+
+    Scaffold(
+        bottomBar = {
+            // Hide the bar on full-screen destinations such as detail.
+            if (currentRoute in NavDestination.Tab.all.map { it.route }) {
+                BottomBar(
+                    currentRoute = currentRoute,
+                    onTabSelected = { tab ->
+                        navController.navigate(tab.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                )
+            }
+        },
+    ) { padding ->
+        NavHost(
+            navController = navController,
+            startDestination = NavDestination.Tab.List.route,
+            modifier = Modifier.fillMaxSize().padding(padding),
+        ) {
+            composable(NavDestination.Tab.List.route) {
+                PokemonListScreen(
+                    onPokemonClick = { id ->
+                        navController.navigate(NavDestination.Detail.routeFor(id))
+                    },
+                )
+            }
+            composable(NavDestination.Tab.Team.route) {
+                PlaceholderScreen(R.string.nav_team)
+            }
+            composable(NavDestination.Tab.TypeCalc.route) {
+                PlaceholderScreen(R.string.nav_calc)
+            }
+            composable(
+                route = NavDestination.Detail.route,
+                arguments = listOf(navArgument(NavDestination.Detail.ARG_ID) {
+                    type = NavType.IntType
+                }),
+            ) { entry ->
+                val id = entry.arguments?.getInt(NavDestination.Detail.ARG_ID) ?: 0
+                PlaceholderScreen(R.string.nav_dex, subtitle = "#$id")
+            }
+        }
+    }
+}
+
+@Composable
+private fun BottomBar(
+    currentRoute: String?,
+    onTabSelected: (NavDestination.Tab) -> Unit,
+) {
+    NavigationBar(containerColor = PokedexColors.Surface) {
+        NavDestination.Tab.all.forEach { tab ->
+            NavigationBarItem(
+                selected = currentRoute == tab.route,
+                onClick = { onTabSelected(tab) },
+                icon = { Icon(tab.icon, contentDescription = null) },
+                label = { Text(stringResource(tab.label)) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Type.FIRE.color(),
+                    selectedTextColor = Type.FIRE.color(),
+                    indicatorColor = PokedexColors.SurfaceRaised,
+                    unselectedIconColor = PokedexColors.TextFaint,
+                    unselectedTextColor = PokedexColors.TextFaint,
+                ),
+            )
+        }
+    }
+}
+
+@Composable
+private fun PlaceholderScreen(labelRes: Int, subtitle: String? = null) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(
+            text = subtitle ?: (stringResource(labelRes) + " · " + stringResource(R.string.coming_soon)),
+            color = PokedexColors.TextDim,
+        )
+    }
+}

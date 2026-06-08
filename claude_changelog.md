@@ -20,3 +20,24 @@
 - Decision logged: switched Room/Hilt annotation processing from kapt to KSP; updated `CLAUDE.md` Key Dependencies accordingly (Hilt `ksp(...hilt-compiler...)`, Room `ksp(...room-compiler...)`).
 - Design-token note: `CLAUDE.md`'s inline example color `Fire = 0xFFFF6B35` is illustrative; actual values derive from the wireframes (Fire = `#FF7A33`, etc.) per the "derive all colors from the wireframes" rule.
 - Verified: `gradlew :core:domain:test :app-phone:assembleDebug :app-tv:assembleDebug` → BUILD SUCCESSFUL; domain unit tests pass.
+
+### Data layer + Pokédex List screen pass
+
+- **core:data** implemented end to end:
+  - Retrofit `PokeApiService` (base `https://pokeapi.co/api/v2/`, no auth): `getPokemonList(limit, offset)` and `getPokemonDetail(id)`, with DTOs (`PokemonListResponseDto`, `NamedApiResourceDto` with id-from-url, `PokemonDetailDto`, sprites/types/stats DTOs; `official-artwork` mapped via `@SerializedName`).
+  - Room `PokedexDatabase` (v1) with flat entities `PokemonEntity` (types + stats serialized via `Converters`), `TypeEntity`, `TeamEntity`; `PokemonDao` (upsert/getById/pageFlow/count) and `TeamDao` (team flow + upsert slot). All `@Query` use no implicit comma joins.
+  - `Converters` for `List<Type>` and `List<Int>` (comma-joined).
+  - `PokemonRepositoryImpl` (`@Singleton`): Room is the single source of truth — list reads come from Room, network refreshes the cache best-effort (chunked detail fetch, 12 at a time); detail is cache-first; team built from team rows joined to cached pokemon in code; offline/empty falls back to cache.
+  - Mappers `PokemonDetailDto.toEntity` / `PokemonEntity.toDomain`; added `Type.fromApiName` to the domain enum for API-slug mapping.
+  - Hilt DI: `DataModule` (Gson/Retrofit/PokeApiService/PokedexDatabase/DAOs) and `RepositoryModule` (`@Binds` repository).
+- **Toolchain fixes for AGP 9 + Hilt/KSP:**
+  - Bumped Hilt `2.56.1 → 2.59.2` (2.56–2.58 Gradle plugins fail on AGP 9 with "Android BaseExtension not found"; 2.59.x is the first AGP-9-compatible line). Updated `CLAUDE.md` Key Dependencies.
+  - Added `android.disallowKotlinSourceSets=false` to `gradle.properties` so KSP can register generated sources under AGP 9 built-in Kotlin.
+  - Added `javax.inject:javax.inject:1` to `core:domain` so use cases can be `@Inject`-constructed.
+- **core:domain**: added `GetPokemonListUseCase` and `GetPokemonDetailUseCase`.
+- **app-phone**: wired Hilt (`@HiltAndroidApp PokedexApplication`, `@AndroidEntryPoint MainActivity`, `INTERNET` permission), Navigation Compose with a bottom-nav `Scaffold` (`NavDestination` sealed class: Dex/Team/Types tabs + Detail route).
+  - **Pokédex List screen** (`ui/list/`) built from `wireframes/phone-list.jsx`: header (title/KANTO·GEN I/count), search bar (visual), `LazyColumn` rows (sprite + name + `#001` + `TypeBadge`s), all three `UiState` cases — skeleton list for Loading, wireframe error state with Retry for Error. `PokemonListViewModel` (`@HiltViewModel`) exposes `StateFlow<UiState<List<Pokemon>>>`; treats empty page as Error.
+  - Team/Types tabs and Detail are placeholders for upcoming passes.
+  - All user-facing strings in `strings.xml`.
+- **Tests**: `PokemonListViewModelTest` covers Success / empty→Error / flow-throws→Error via a fake repository + real use case.
+- Verified: `gradlew :core:data:assembleDebug :app-phone:assembleDebug :core:domain:test :app-phone:testDebugUnitTest` → BUILD SUCCESSFUL; all unit tests pass, no warnings.

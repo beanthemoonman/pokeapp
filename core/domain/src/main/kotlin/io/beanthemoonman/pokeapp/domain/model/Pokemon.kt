@@ -27,5 +27,14 @@ data class Stats(
 
 enum class Type {
     NORMAL, FIRE, WATER, GRASS, ELECTRIC, ICE, FIGHTING, POISON,
-    GROUND, FLYING, PSYCHIC, BUG, ROCK, GHOST, DRAGON, DARK, STEEL, FAIRY
+    GROUND, FLYING, PSYCHIC, BUG, ROCK, GHOST, DRAGON, DARK, STEEL, FAIRY;
+
+    companion object {
+        /**
+         * Maps a PokéAPI type slug (e.g. "fire") to a domain [Type], or null for
+         * non-battle types the API exposes ("unknown", "shadow", "stellar").
+         */
+        fun fromApiName(name: String): Type? =
+            entries.firstOrNull { it.name.equals(name, ignoreCase = true) }
+    }
 }
