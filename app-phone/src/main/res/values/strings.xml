@@ -58,6 +58,32 @@
     <string name="detail_error_body">Check your connection and try again.</string>
     <string name="detail_retry">Retry</string>
 
+    <!-- Type Matchup calculator -->
+    <string name="typecalc_title">Type Matchup</string>
+    <string name="typecalc_subtitle">DEFENDING · %1$d ATTACKERS · GEN %2$s</string>
+    <string name="typecalc_defender">Defending types</string>
+    <string name="typecalc_defender_empty_title">Pick a type</string>
+    <string name="typecalc_defender_empty_hint">tap one or two below</string>
+    <string name="typecalc_pick_defender">Choose defending types (up to 2)</string>
+    <string name="typecalc_clear">Clear</string>
+    <string name="typecalc_mode_defense">Every attacker · vs %1$s</string>
+    <string name="typecalc_prompt">Pick one or two defending types</string>
+    <string name="typecalc_prompt_hint">See what every attacking type does to that combo.</string>
+    <string name="typecalc_def_quad">Double Weak</string>
+    <string name="typecalc_def_double">Weak</string>
+    <string name="typecalc_def_neutral">Neutral</string>
+    <string name="typecalc_def_half">Resists</string>
+    <string name="typecalc_def_quarter">Double Resists</string>
+    <string name="typecalc_def_immune">Immune</string>
+    <string name="typecalc_def_mult_quad">×4</string>
+    <string name="typecalc_def_mult_double">×2</string>
+    <string name="typecalc_def_mult_neutral">×1</string>
+    <string name="typecalc_def_mult_half">×½</string>
+    <string name="typecalc_def_mult_quarter">×¼</string>
+    <string name="typecalc_def_mult_immune">×0</string>
+    <string name="typecalc_group_empty">None</string>
+    <string name="typecalc_error">Couldn\'t build the matchup chart.</string>
+
     <!-- Bottom navigation -->
     <string name="nav_dex">Dex</string>
     <string name="nav_team">Team</string>

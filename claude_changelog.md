@@ -191,3 +191,122 @@ already supported.
   retry→Success). Updated the list test's `FakeRepository` for the new interface method.
 - Verified: `gradlew :core:domain:test :app-phone:testDebugUnitTest :app-phone:assembleDebug
   :app-tv:assembleDebug` → BUILD SUCCESSFUL; all unit tests pass.
+
+## 2026-06-08 — Type Matchup calculator (phone, screen #4)
+
+Implemented the "Types" tab (the Type Matchup Calculator), replacing its placeholder.
+
+- **core/domain**: new `EffectivenessGroup` enum (SUPER ×2 / NORMAL ×1 / NOT_VERY ×½ /
+  NO_EFFECT ×0, in attacker-favorable display order) with `forMultiplier()`. New
+  `GroupTypeEffectivenessUseCase` — pure, static grouping of a generation's roster by how an
+  attacking type fares against each defender, built on the existing `TypeEffectivenessMatrix`
+  (no network). Always returns all four group keys in order.
+- **app-phone `ui/typecalc/`**: `TypeMatchupViewModel` combines `ObserveSelectedGenerationUseCase`
+  with a selected-attacker StateFlow, exposing `StateFlow<UiState<TypeMatchupData>>` (Loading until
+  the generation resolves, then Success). Attacker defaults to Fire (per wireframe), falling back
+  within the roster. `TypeMatchupScreen` renders the header, attacker hero card · "vs" · static
+  "All Types" defender card, a tappable roster strip (FlowRow of TypeBadges; selected = filled,
+  others = soft) to pick the attacker, and the four grouped sections with colored markers,
+  multiplier, count, and badges — derived from `wireframes/phone-tools.jsx`. Loading renders
+  skeletons; Error branch included for completeness.
+- Wired `TypeMatchupScreen()` into the `TypeCalc` tab in `PokedexNavHost`.
+- All user-facing strings added to `strings.xml` (`typecalc_*`).
+- **Tests**: `TypeMatchupViewModelTest` — default Fire attacker groups, attacker re-selection
+  recomputes groups, Gen I roster excludes Dark/Steel/Fairy.
+- Verified: `gradlew :core:domain:test :app-phone:testDebugUnitTest :app-phone:assembleDebug`
+  → BUILD SUCCESSFUL; all unit tests pass.
+
+## 2026-06-08 — Type Matchup: defender selection + defensive mode (phone)
+
+Extended the Type Matchup calculator with a second, defensive mode driven by selecting defender
+type(s).
+
+- **core/domain**: new `DefenseBucket` enum (×4 QUAD / ×2 DOUBLE / ×1 NEUTRAL / ×½ HALF /
+  ×¼ QUARTER / ×0 IMMUNE, worst-to-best for the defender) with `forMultiplier()` — covers the
+  stacked multipliers a dual-type combo produces. New `GroupDefenseEffectivenessUseCase` groups
+  every attacking type in the generation by how hard it hits a 1–2 type defender combo, built on
+  `TypeEffectivenessMatrix.defendingWeaknesses` (still static, no network).
+- **TypeMatchupViewModel**: added a `defenderSelection` StateFlow (up to 2 distinct types — a valid
+  mono/dual combo; tapping a selected type removes it, a third pick evicts the oldest). `state`
+  now combines generation + attacker + defenders and exposes both `attackGroups` and
+  `defenseGroups` plus the chosen `defenders` and a `defending` flag. Defenders are sanitized
+  against the active generation's roster (e.g. Fairy drops in Gen I). New `toggleDefender` /
+  `clearDefenders`.
+- **TypeMatchupScreen**: the defender card now renders the chosen combo (badges) or "All Types";
+  added a "Choose defending types (up to 2)" chip strip with a Clear action and a result-mode
+  label. When a defender combo is selected the result switches to the six defensive buckets
+  (Double Weak … Immune, weakness = warm, resist = green, immune = purple); with no defender it
+  stays the offensive grouping. `GroupSection` was generalized to serve both modes.
+- Added `typecalc_pick_defender`, `typecalc_clear`, `typecalc_mode_*`, and `typecalc_def_*`
+  strings.
+- **Tests**: `TypeMatchupViewModelTest` gains offensive-mode default, Fire/Flying combo stacking
+  into ×4 (Rock) and ×0 (Ground), and the 2-defender cap/eviction/clear behavior.
+- Verified: `gradlew :core:domain:test :app-phone:testDebugUnitTest :app-phone:assembleDebug`
+  → BUILD SUCCESSFUL; all unit tests pass.
+
+## 2026-06-08 — Type Matchup: dual attacker types (phone)
+
+Made the attacking side symmetric with the defender side — you can now pick up to 2 attacking types.
+
+- **GroupTypeEffectivenessUseCase**: signature changed `attacker: Type` → `attackers: List<Type>`.
+  With two types it models offensive coverage, bucketing each defender by the *best* (max)
+  multiplier across the selected move-types (moves are independent, so you'd use the most
+  effective one). Single-type behavior is unchanged.
+- **TypeMatchupViewModel**: `attackerSelection` is now a `List<Type>` seeded with the default
+  (Fire) so it's a real, buildable selection; `selectAttacker` → `toggleAttacker` (same up-to-2
+  cap + oldest-eviction as the defender). Emptying it resolves back to the default. `TypeMatchupData.attacker`
+  → `attackers: List<Type>`.
+- **TypeMatchupScreen**: the attacker/defender hero cards now share one `TypeHeroCard` (single
+  type → name + badge; combo → badges; empty → "All Types" placeholder). The attacker chip strip
+  toggles up to 2; the offensive result-mode label shows the attacker combo name.
+- String `typecalc_pick_attacker` → "Choose attacking types (up to 2)".
+- **Tests**: replaced the single-attacker assertion with `attackers` list checks; added
+  default-fallback-on-empty and Fire+Ground coverage-of-Rock (best-multiplier) cases.
+- Verified: `gradlew :core:domain:test :app-phone:testDebugUnitTest :app-phone:assembleDebug`
+  → BUILD SUCCESSFUL; all unit tests pass.
+
+## 2026-06-08 — Type Matchup: revert dual attacker, relabel "Attacking move" (phone)
+
+Walked back the previous dual-attacker change per the developer — the attacker is a single type
+again; only the defender supports up-to-2 (a valid mono/dual combo).
+
+- **GroupTypeEffectivenessUseCase**: signature back to `attacker: Type`.
+- **TypeMatchupViewModel**: `attackerSelection` back to a single `Type?` with `selectAttacker`;
+  `TypeMatchupData.attackers` → `attacker: Type`. Defender list logic unchanged.
+- **TypeMatchupScreen**: attacker chip strip is single-select again; the shared `TypeHeroCard`
+  receives the attacker as a one-element list.
+- **Language**: relabeled "Attacker" → "Attacking move" (`typecalc_attacker`), picker →
+  "Choose attacking move type", offensive mode label → "%1$s move · vs every defender" — the
+  wording the developer found clearer.
+- **Tests**: restored single-attacker default + `selectAttacker` recompute cases.
+- Verified: `gradlew :core:domain:test :app-phone:testDebugUnitTest :app-phone:assembleDebug`
+  → BUILD SUCCESSFUL; all unit tests pass.
+
+## 2026-06-08 — Type Matchup: drop attacking move, defensive-only (phone + wireframe)
+
+Per the developer, the attacking-move picker was redundant — the "Every attacker" defensive list
+already maps every attacking type. Removed it; the screen is now a pure defensive calculator.
+
+- **Removed** `EffectivenessGroup` and `GroupTypeEffectivenessUseCase` (the offensive grouping —
+  now dead). `DefenseBucket` doc updated to no longer reference them.
+- **TypeMatchupViewModel**: dropped the attacker entirely (no `attackerSelection`/`selectAttacker`,
+  no `GroupTypeEffectivenessUseCase` dep). `state` combines generation + defenders only;
+  `TypeMatchupData` now just `{ generation, roster, defenders, defenseGroups }`. Empty selection =
+  prompt state.
+- **TypeMatchupScreen**: removed the attacker hero card, the "vs", the attacking-move chip strip,
+  and the offensive result branch. Now: a single defending-type hero card (or "Pick a type"
+  placeholder), the defender chip strip (up to 2) with Clear, and the six defensive buckets. Added
+  an empty-state prompt shown until a type is picked.
+- **strings.xml**: removed all attacker/offense strings (`typecalc_attacker`, `typecalc_vs`,
+  `typecalc_all_types*`, `typecalc_pick_attacker`, `typecalc_mode_offense`, `typecalc_group_*`,
+  `typecalc_mult_*`). Subtitle → "DEFENDING · %1$d ATTACKERS · GEN %2$s"; added
+  `typecalc_defender_empty_*` and `typecalc_prompt*`.
+- **Wireframe**: `data.js` gains `groupDefenseGen(defs, gen)` (buckets every attacker by the stacked
+  ×4…×0 multiplier on a 1–2 type combo) + export. `phone-tools.jsx` `PhoneMatchup` rewritten to the
+  defensive layout (defending-type hero + chip strip + six buckets), dropping the attacker picker.
+  Note: the rendered `Pokédex App.html` is a Claude Design output and is now stale vs the `.jsx`
+  source (the source of truth); it would need re-rendering in Claude Design.
+- **Tests**: removed the offensive cases; kept/added the empty-start, Gen I roster, Fire/Flying
+  ×4-Rock/×0-Ground stacking, and 2-defender cap/eviction/clear cases.
+- Verified: `gradlew :core:domain:test :app-phone:testDebugUnitTest :app-phone:assembleDebug`
+  → BUILD SUCCESSFUL; all unit tests pass.

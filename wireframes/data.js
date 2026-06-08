@@ -193,6 +193,23 @@
     return g;
   }
 
+  // Defensive view: bucket every attacking type by the multiplier it lands on a defending
+  // combo (1–2 types). Dual types stack, so ×4 and ×¼ are possible. `defs` = ['fire','flying'].
+  function groupDefenseGen(defs, gen) {
+    const g = { quad: [], double: [], neutral: [], half: [], quarter: [], immune: [] };
+    if (!defs || !defs.length) return g;
+    typesForGen(gen).forEach((atk) => {
+      const m = defs.reduce((acc, def) => acc * effGen(atk, def, gen), 1);
+      if (m >= 4) g.quad.push(atk);
+      else if (m >= 2) g.double.push(atk);
+      else if (m === 0) g.immune.push(atk);
+      else if (m <= 0.25) g.quarter.push(atk);
+      else if (m < 1) g.half.push(atk);
+      else g.neutral.push(atk);
+    });
+    return g;
+  }
+
   // ── Team builder sample ─────────────────────────────────────
   const TEAM = [6, 9, 3, 25, 143, null].map((d) => (d ? byDex(d) : null));
 
@@ -201,6 +218,6 @@
     typeIds: Object.keys(TYPES),
     // generations + per-gen type system
     GENERATIONS, genById, currentGen, dexForGen,
-    TYPE_ROSTER, eraOf, typesForGen, CHART_OVERRIDES, effGen, groupEffectivenessGen,
+    TYPE_ROSTER, eraOf, typesForGen, CHART_OVERRIDES, effGen, groupEffectivenessGen, groupDefenseGen,
   };
 })();
