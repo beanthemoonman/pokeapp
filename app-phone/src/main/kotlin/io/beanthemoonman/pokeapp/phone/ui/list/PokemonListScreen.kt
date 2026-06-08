@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.beanthemoonman.pokeapp.domain.model.Generation
 import io.beanthemoonman.pokeapp.domain.model.Pokemon
 import io.beanthemoonman.pokeapp.domain.model.Type
 import io.beanthemoonman.pokeapp.domain.model.UiState
@@ -43,20 +44,25 @@ import io.beanthemoonman.pokeapp.ui.common.component.PokemonSprite
 import io.beanthemoonman.pokeapp.ui.common.component.SkeletonBox
 import io.beanthemoonman.pokeapp.ui.common.component.TypeBadge
 import io.beanthemoonman.pokeapp.ui.common.component.TypeBadgeSize
+import io.beanthemoonman.pokeapp.ui.common.component.VersionChip
 import io.beanthemoonman.pokeapp.ui.common.theme.PokedexColors
 import io.beanthemoonman.pokeapp.ui.common.theme.color
 
 @Composable
 fun PokemonListScreen(
     onPokemonClick: (Int) -> Unit,
+    onSwitchGeneration: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PokemonListViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val generation by viewModel.generation.collectAsStateWithLifecycle()
     PokemonListContent(
         state = state,
+        generation = generation,
         onPokemonClick = onPokemonClick,
         onRetry = viewModel::load,
+        onSwitchGeneration = onSwitchGeneration,
         modifier = modifier,
     )
 }
@@ -64,13 +70,19 @@ fun PokemonListScreen(
 @Composable
 private fun PokemonListContent(
     state: UiState<List<Pokemon>>,
+    generation: Generation?,
     onPokemonClick: (Int) -> Unit,
     onRetry: () -> Unit,
+    onSwitchGeneration: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxSize().background(PokedexColors.Background)) {
         val loadedCount = (state as? UiState.Success)?.data?.size ?: 0
-        ListHeader(loadedCount = loadedCount)
+        ListHeader(
+            loadedCount = loadedCount,
+            generation = generation,
+            onSwitchGeneration = onSwitchGeneration,
+        )
         when (state) {
             is UiState.Loading -> LoadingList()
             is UiState.Error -> ErrorState(message = state.message, onRetry = onRetry)
@@ -80,8 +92,19 @@ private fun PokemonListContent(
 }
 
 @Composable
-private fun ListHeader(loadedCount: Int) {
+private fun ListHeader(
+    loadedCount: Int,
+    generation: Generation?,
+    onSwitchGeneration: () -> Unit,
+) {
     Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 12.dp)) {
+        if (generation != null) {
+            VersionChip(
+                generation = generation,
+                onClick = onSwitchGeneration,
+                modifier = Modifier.padding(bottom = 12.dp),
+            )
+        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -96,18 +119,14 @@ private fun ListHeader(loadedCount: Int) {
                     letterSpacing = (-0.5).sp,
                 )
                 Text(
-                    text = stringResource(R.string.list_subtitle),
+                    text = stringResource(R.string.list_subtitle, generation?.label ?: ""),
                     color = PokedexColors.TextFaint,
                     fontSize = 11.5.sp,
                     fontFamily = FontFamily.Monospace,
                 )
             }
             Text(
-                text = stringResource(
-                    R.string.list_count,
-                    loadedCount,
-                    PokemonListViewModel.GEN_I_COUNT,
-                ),
+                text = stringResource(R.string.list_count, loadedCount, generation?.dexEnd ?: 0),
                 color = PokedexColors.TextDim,
                 fontSize = 13.sp,
                 fontFamily = FontFamily.Monospace,

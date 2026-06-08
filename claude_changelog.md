@@ -58,3 +58,21 @@ Reworked the wireframes so a **generation selector is the root screen**; the cho
 - **`foundations.jsx`**: added `GenerationCard` to the component reference; type-palette title notes the 15/17/18 roster.
 - **`app.jsx` + `Pokédex App.html`**: new first canvas section "Root · Version Select"; loads `version-select.jsx`.
 - **`CLAUDE.md`**: updated the wireframe file list and added a "Generation context" subsection, flagging that `TypeEffectivenessMatrix` must become **keyed by generation** (still static/hardcoded, still never fetched) in the upcoming code refactor.
+
+### Code refactor — generation context (domain + persistence + phone selector)
+
+Implemented the generation context decided in the wireframe pass.
+
+- **core/domain**:
+  - `Generation` model + `Generations` catalog (I–IX: region, cumulative `dexEnd`, versions), mirroring `data.js`.
+  - **`TypeEffectivenessMatrix` is now generation-keyed**: modern `chart` baseline + `gen1Overrides` / `gen2to5Overrides` (from PokéAPI `past_damage_relations`) + per-era roster (`typesForGeneration`). `effectiveness` / `attackingEffectiveness` / `defendingWeaknesses` take a `generation` (defaults to latest); types outside the roster resolve to 1×. Still static/hardcoded, never fetched.
+  - `GenerationRepository` interface + `GetGenerationsUseCase` / `ObserveSelectedGenerationUseCase` / `SelectGenerationUseCase`.
+  - Extended `TypeEffectivenessMatrixTest` with per-gen cases (roster sizes; Gen I Bug↔Poison/Ghost→Psychic/Ice→Fire; Gen II–V Steel resists Ghost/Dark; absent types → 1×). All pass.
+- **core/data**: `GenerationRepositoryImpl` backed by **DataStore Preferences** (new `androidx.datastore:datastore-preferences` dep, catalog + module); bound in `RepositoryModule`.
+- **core/ui-common**: shared `GenerationCard` + `VersionChip` components and `Generation.accentColor()` (accents reuse type-color tokens, matching the wireframes).
+- **app-phone**:
+  - **Root generation selector is now the start destination** when no generation is chosen: `AppStartViewModel` gate → `PokedexApp` renders `VersionSelectScreen` (first launch) or the shell. `VersionSelectViewModel` persists the choice and routes into the List.
+  - `NavDestination.VersionSelect` route added; `PokedexNavHost` gained `startAtSelector` + the switch-generation flow (List header `VersionChip` → re-open selector → `popUpTo` selector inclusive).
+  - `PokemonListViewModel` is generation-scoped: observes the selected generation and loads National Dex `#1..dexEnd` via `flatMapLatest`; exposes `generation` for the header. List header now shows the `VersionChip` + "NATIONAL · THROUGH GEN X" + `/dexEnd`.
+  - Updated `PokemonListViewModelTest` for the new constructor (fake `GenerationRepository`).
+- Verified: `gradlew :core:domain:test :app-phone:testDebugUnitTest :app-phone:assembleDebug :app-tv:assembleDebug :core:data:assembleDebug` → BUILD SUCCESSFUL; all unit tests pass.

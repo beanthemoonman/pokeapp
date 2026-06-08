@@ -51,4 +51,46 @@ class TypeEffectivenessMatrixTest {
         // Grass/Poison double weak to Fire? Fire 2x grass, 1x poison -> 2x.
         assertEquals(2f, weaknesses[Type.FIRE])
     }
+
+    // ── Per-generation behaviour (values verified against PokéAPI past_damage_relations) ──
+
+    @Test
+    fun `generation rosters have the right sizes`() {
+        assertEquals(15, TypeEffectivenessMatrix.typesForGeneration(1).size)
+        assertEquals(17, TypeEffectivenessMatrix.typesForGeneration(3).size)
+        assertEquals(18, TypeEffectivenessMatrix.typesForGeneration(6).size)
+    }
+
+    @Test
+    fun `gen 1 historical matchups differ from modern`() {
+        assertEquals(2f, TypeEffectivenessMatrix.effectiveness(Type.BUG, Type.POISON, 1))
+        assertEquals(2f, TypeEffectivenessMatrix.effectiveness(Type.POISON, Type.BUG, 1))
+        assertEquals(0f, TypeEffectivenessMatrix.effectiveness(Type.GHOST, Type.PSYCHIC, 1))
+        assertEquals(1f, TypeEffectivenessMatrix.effectiveness(Type.ICE, Type.FIRE, 1))
+        // Unchanged-within-roster matchup stays the same.
+        assertEquals(2f, TypeEffectivenessMatrix.effectiveness(Type.FIRE, Type.GRASS, 1))
+    }
+
+    @Test
+    fun `types absent from a generation resolve to neutral`() {
+        // Fairy doesn't exist before Gen VI; Dark/Steel don't exist in Gen I.
+        assertEquals(1f, TypeEffectivenessMatrix.effectiveness(Type.STEEL, Type.FAIRY, 3))
+        assertEquals(1f, TypeEffectivenessMatrix.effectiveness(Type.DARK, Type.GHOST, 1))
+    }
+
+    @Test
+    fun `steel resisted ghost and dark before gen 6`() {
+        assertEquals(0.5f, TypeEffectivenessMatrix.effectiveness(Type.GHOST, Type.STEEL, 3))
+        assertEquals(0.5f, TypeEffectivenessMatrix.effectiveness(Type.DARK, Type.STEEL, 3))
+        // Removed in Gen VI.
+        assertEquals(1f, TypeEffectivenessMatrix.effectiveness(Type.GHOST, Type.STEEL, 6))
+        assertEquals(1f, TypeEffectivenessMatrix.effectiveness(Type.DARK, Type.STEEL, 6))
+    }
+
+    @Test
+    fun `gen 2-5 uses modern values where unchanged`() {
+        // The Gen-1-only Bug/Poison and Ghost/Psychic quirks are already gone by Gen II.
+        assertEquals(0.5f, TypeEffectivenessMatrix.effectiveness(Type.BUG, Type.POISON, 3))
+        assertEquals(2f, TypeEffectivenessMatrix.effectiveness(Type.GHOST, Type.PSYCHIC, 3))
+    }
 }

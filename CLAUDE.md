@@ -45,8 +45,8 @@ context that drives the rest of the app:
 - **Type system is per-generation.** The roster changes (Gen I = 15 types; Gen II–V = 17, +Dark/+Steel;
   Gen VI+ = 18, +Fairy) and several matchups differ by era. Values transcribed from PokéAPI
   `type.past_damage_relations` (NOT invented) — see `CHART_OVERRIDES` / `effGen` / `typesForGen` in `data.js`.
-  This means `TypeEffectivenessMatrix` (below) must become **keyed by generation**; it stays static/hardcoded
-  and is still never fetched. (Domain/code refactor pending — wireframes done first.)
+  This means `TypeEffectivenessMatrix` (below) is **keyed by generation**; it stays static/hardcoded
+  and is still never fetched.
 
 ---
 
@@ -217,16 +217,25 @@ enum class Type { NORMAL, FIRE, WATER, GRASS, ELECTRIC, ICE, FIGHTING, POISON,
 ```
 
 ### TypeEffectivenessMatrix
-Implement as a static object in `core/domain` — do not fetch this from the API at runtime:
+A static object in `core/domain` — do not fetch this from the API at runtime. It is **keyed by
+generation**: the type roster narrows per era (Gen I = 15 types, Gen II–V = 17, Gen VI+ = 18) and a
+few matchups differ. The modern chart is the baseline; earlier eras apply hardcoded overrides
+transcribed from PokéAPI `type.past_damage_relations` (not invented). `generation` defaults to the
+latest. Types outside a generation's roster resolve to 1×.
 
 ```kotlin
 object TypeEffectivenessMatrix {
     // Returns multiplier: 0f, 0.5f, 1f, or 2f
-    fun effectiveness(attacking: Type, defending: Type): Float
-    fun attackingEffectiveness(attacking: Type, defendingTypes: List<Type>): Float
-    fun defendingWeaknesses(defendingTypes: List<Type>): Map<Type, Float>
+    fun effectiveness(attacking: Type, defending: Type, generation: Int = Generations.latest.id): Float
+    fun attackingEffectiveness(attacking: Type, defendingTypes: List<Type>, generation: Int = Generations.latest.id): Float
+    fun defendingWeaknesses(defendingTypes: List<Type>, generation: Int = Generations.latest.id): Map<Type, Float>
+    fun typesForGeneration(generation: Int): List<Type>
 }
 ```
+
+The selected generation persists via `GenerationRepository` (DataStore in `core/data`) and is read
+through `ObserveSelectedGenerationUseCase` / `SelectGenerationUseCase`. The phone app opens on the
+generation selector when none is chosen (see `AppStartViewModel` gate).
 
 ---
 

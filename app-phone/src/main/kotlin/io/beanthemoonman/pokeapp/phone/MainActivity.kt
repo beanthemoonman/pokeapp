@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import dagger.hilt.android.AndroidEntryPoint
-import io.beanthemoonman.pokeapp.phone.ui.nav.PokedexNavHost
+import io.beanthemoonman.pokeapp.phone.ui.nav.PokedexApp
 import io.beanthemoonman.pokeapp.ui.common.theme.PokedexTheme
 
 @AndroidEntryPoint
@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             PokedexTheme {
-                PokedexNavHost()
+                PokedexApp()
             }
         }
     }

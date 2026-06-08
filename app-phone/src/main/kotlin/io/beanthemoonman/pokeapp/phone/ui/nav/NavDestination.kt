@@ -11,6 +11,9 @@ import io.beanthemoonman.pokeapp.phone.R
 /** Top-level bottom-navigation destinations. */
 sealed class NavDestination(val route: String) {
 
+    /** Root generation selector (first launch + "switch generation"). */
+    data object VersionSelect : NavDestination("version_select")
+
     /** Tabs that appear in the bottom navigation bar. */
     sealed class Tab(
         route: String,
