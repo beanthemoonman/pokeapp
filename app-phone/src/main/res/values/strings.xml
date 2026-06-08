@@ -58,6 +58,68 @@
     <string name="detail_error_body">Check your connection and try again.</string>
     <string name="detail_retry">Retry</string>
 
+    <!-- Items dictionary -->
+    <string name="items_title">Items</string>
+    <string name="items_subtitle">DICTIONARY · THROUGH GEN %1$s</string>
+    <string name="items_count">%1$d items</string>
+    <string name="items_search_hint">Search items</string>
+    <string name="items_search_clear">Clear search</string>
+    <string name="items_search_empty_title">No matches</string>
+    <string name="items_search_empty_body">No item matches “%1$s”.</string>
+    <string name="items_search_error">Couldn\'t search right now. Check your connection and try again.</string>
+    <string name="items_category_empty">No items loaded in this category yet — scroll to load more.</string>
+    <string name="items_error_title">Couldn\'t load items</string>
+    <string name="items_error_body">Check your connection and try again. Your saved data is still available offline.</string>
+    <string name="items_retry">Retry</string>
+    <string name="items_load_more_retry">Load more</string>
+    <string name="item_cost">₽%1$s</string>
+    <string name="item_cost_none">—</string>
+    <string name="item_buy">Buy</string>
+    <string name="item_effect">Effect</string>
+    <string name="item_no_effect">No effect description available.</string>
+    <string name="item_description">Description</string>
+    <string name="item_detail_error_title">Couldn\'t load this item</string>
+    <string name="item_detail_error_body">Check your connection and try again.</string>
+    <string name="item_cat_all">All</string>
+    <string name="item_cat_balls">Poké Balls</string>
+    <string name="item_cat_healing">Healing</string>
+    <string name="item_cat_medicine">Medicine</string>
+    <string name="item_cat_evolution">Evolution</string>
+    <string name="item_cat_held">Held</string>
+    <string name="item_cat_mega">Mega Stones</string>
+    <string name="item_cat_key">Key Items</string>
+    <string name="item_cat_other">Other</string>
+
+    <!-- Moves dictionary -->
+    <string name="moves_title">Moves</string>
+    <string name="moves_subtitle">DICTIONARY · THROUGH GEN %1$s</string>
+    <string name="moves_count">%1$d moves</string>
+    <string name="moves_search_hint">Search moves</string>
+    <string name="moves_search_clear">Clear search</string>
+    <string name="moves_search_empty_title">No matches</string>
+    <string name="moves_search_empty_body">No move matches “%1$s”.</string>
+    <string name="moves_search_error">Couldn\'t search right now. Check your connection and try again.</string>
+    <string name="moves_class_empty">No moves loaded in this class yet — scroll to load more.</string>
+    <string name="moves_error_title">Couldn\'t load moves</string>
+    <string name="moves_error_body">Check your connection and try again. Your saved data is still available offline.</string>
+    <string name="moves_retry">Retry</string>
+    <string name="moves_load_more_retry">Load more</string>
+    <string name="move_class_all">All</string>
+    <string name="move_class_physical">Physical</string>
+    <string name="move_class_special">Special</string>
+    <string name="move_class_status">Status</string>
+    <string name="move_meta">%1$s · %2$dpp</string>
+    <string name="move_stat_power">Power</string>
+    <string name="move_stat_acc">Acc</string>
+    <string name="move_stat_pp">PP</string>
+    <string name="move_value_none">—</string>
+    <string name="move_accuracy">%1$d%%</string>
+    <string name="move_pp">%1$dpp</string>
+    <string name="move_effect">Effect</string>
+    <string name="move_no_effect">No effect description available.</string>
+    <string name="move_detail_error_title">Couldn\'t load this move</string>
+    <string name="move_detail_error_body">Check your connection and try again.</string>
+
     <!-- Type Matchup calculator -->
     <string name="typecalc_title">Type Matchup</string>
     <string name="typecalc_subtitle">DEFENDING · %1$d ATTACKERS · GEN %2$s</string>
@@ -107,6 +169,8 @@
 
     <!-- Bottom navigation -->
     <string name="nav_dex">Dex</string>
+    <string name="nav_items">Items</string>
+    <string name="nav_moves">Moves</string>
     <string name="nav_team">Team</string>
     <string name="nav_calc">Types</string>
 

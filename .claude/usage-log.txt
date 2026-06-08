@@ -83,3 +83,28 @@ A third time!! What is happening??
  Now the main screen file:
 
  ● API Error: Output blocked by content filtering policy
+
+Turns out splitting the prompt was the fix. Usage below, but was split between a bunch of sessions
+so probably double below,
+ Session
+
+   Total cost:            $17.66
+ Total duration (API):  37m 28s
+   Total duration (wall): 1h 11m 50s
+   Total code changes:    5423 lines added, 46 lines removed
+   Usage by model:
+     claude-haiku-4-5:  34.2k input, 661 output, 0 cache read, 0 cache write ($0.0375)
+      claude-opus-4-8:  17.5k input, 184.6k output, 18.4m cache read, 591.6k cache write ($17.62)
+
+ Current session
+ ████████████████████████████████████████████████▌  97% used                                                                                                                                                                       Resets 10pm (America/New_York)
+
+ What's contributing to your limits usage?
+ Approximate, based on local sessions on this machine — does not include other devices or claude.ai
+
+ Last 24h · these are independent characteristics of your usage, not a breakdown
+ 47% of your usage was at >150k context
+  Longer sessions are more expensive even when cached. /compact mid-task, /clear when switching to new tasks.
+
+ Skills, subagents, plugins, and MCP servers
+ No attribution data yet · accumulates as you use Claude

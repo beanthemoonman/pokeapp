@@ -1,6 +1,10 @@
 package io.beanthemoonman.pokeapp.data.remote
 
 import io.beanthemoonman.pokeapp.data.remote.dto.EvolutionChainDto
+import io.beanthemoonman.pokeapp.data.remote.dto.GenerationDto
+import io.beanthemoonman.pokeapp.data.remote.dto.ItemDetailDto
+import io.beanthemoonman.pokeapp.data.remote.dto.ItemListResponseDto
+import io.beanthemoonman.pokeapp.data.remote.dto.MoveDetailDto
 import io.beanthemoonman.pokeapp.data.remote.dto.MoveDto
 import io.beanthemoonman.pokeapp.data.remote.dto.PokemonDetailDto
 import io.beanthemoonman.pokeapp.data.remote.dto.PokemonListResponseDto
@@ -29,6 +33,21 @@ interface PokeApiService {
 
     @GET("move/{name}")
     suspend fun getMove(@Path("name") name: String): MoveDto
+
+    @GET("move/{id}")
+    suspend fun getMoveDetail(@Path("id") id: Int): MoveDetailDto
+
+    @GET("generation/{id}")
+    suspend fun getGeneration(@Path("id") id: Int): GenerationDto
+
+    @GET("item")
+    suspend fun getItemList(
+        @Query("limit") limit: Int,
+        @Query("offset") offset: Int
+    ): ItemListResponseDto
+
+    @GET("item/{id}")
+    suspend fun getItem(@Path("id") id: Int): ItemDetailDto
 
     companion object {
         const val BASE_URL = "https://pokeapi.co/api/v2/"

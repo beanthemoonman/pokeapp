@@ -338,3 +338,83 @@ Confirmed PokeAPI v2 supports both views (move endpoint: power/pp/accuracy/type/
 - components.jsx: BottomNav now reads Pokédex · Items · Moves · Team · Matchup (dropped "Saved"); added Ic.bag and Ic.move icons.
 - New phone-items.jsx (PhoneItems/Loading/Error + ItemDetail) and phone-moves.jsx (PhoneMoves/Loading/Error + MoveDetail).
 - Registered both as new DCSections in app.jsx and added their <script> tags to "Pokédex App.html".
+
+## 2026-06-08 — Items dictionary (phone: list + detail)
+
+Implemented the Items dictionary screens from `wireframes/phone-items.jsx` (list with
+search + category chips + tappable rows → item detail; all three UiState cases). Two
+decisions confirmed with the developer: **national/best-effort generation scoping** (the
+item dictionary is the full national set — PokéAPI has no reliable introduced-in-gen list —
+with the `VersionChip` kept in the header for consistency/navigation) and **Items only**
+this pass (Moves remains future work).
+
+- **core/domain**: `Item` model + `ItemCategory` enum. Categories are coarse display
+  buckets (Poké Balls / Healing / Medicine / Evolution / Held / Mega Stones / Key Items /
+  Other) that roll up PokéAPI's ~50 granular `item-category` names via `fromApiName`
+  (unknown → `OTHER`); `slug`-based persistence round-trips through `fromSlug`.
+  `ItemRepository` interface + `GetItemPageUseCase` (PAGE_SIZE 30) / `SearchItemsUseCase` /
+  `GetItemDetailUseCase`.
+- **core/data**: `ItemDtos` (`ItemListResponseDto`, `ItemDetailDto` + effect/flavor/sprite
+  DTOs); `PokeApiService.getItemList`/`getItem`. Flat `ItemEntity` (category stored as the
+  bucket slug) + `ItemDao`; `PokedexDatabase` bumped **v2 → v3** (destructive fallback, no
+  manual migration), entity/DAO registered, DAO provided in `DataModule`. `ItemMappers`
+  (DTO→entity picks English short_effect/flavor, whitespace-normalized; reuses
+  `String.toTitle`). `ItemRepositoryImpl`: cache-first paging keyed off the `/item` list
+  endpoint's id window (bounded detail-fetch chunks of 12), search by id or name against a
+  once-fetched in-memory name index, cache-first detail. Bound in `RepositoryModule`.
+- **app-phone `ui/items/`**: `ItemsListViewModel` (offset paging mirroring the dex list —
+  cancellation-safe, append/retry, `loadMore`; client-side category filter via
+  `ItemsListData.visible`; debounced search with retry-counter) and `ItemsListScreen`
+  (header `VersionChip`/title/subtitle/count + search field + horizontally-scrolling
+  category chips + rows with gold `ItemIcon`/`CostTag`; Loading skeletons, Error+Retry,
+  search Empty/Error states, and a category-empty hint). `ItemDetailViewModel`
+  (id from `SavedStateHandle`) + `ItemDetailScreen` (back bar, gold gradient header card
+  with category eyebrow + Buy/cost, Effect section, Description card; Loading skeleton +
+  Error/Retry). Gold accent `#C9A24A` (`ItemAccent`) lives in the items package — it is not
+  a shared/type color. The wireframe's filter FAB and favorite star were omitted (the
+  category chips already filter; no favorites feature).
+- **nav**: added `NavDestination.Tab.Items` (Backpack icon) + `NavDestination.ItemDetail`
+  route; wired both into `PokedexNavHost` and expanded the bottom bar to four tabs
+  (Dex · Items · Team · Types).
+- All user-facing strings added to `strings.xml` (`items_*`, `item_*`, `nav_items`).
+- **Tests**: `ItemsListViewModelTest` (first page / first-page error / append / end-of-dict /
+  category filter / search Idle·Results·Empty·Error→retry) and `ItemDetailViewModelTest`
+  (load by saved-state id; failure→Error→retry→Success), with fake item/generation repos.
+- Verified: `gradlew :core:domain:test :core:data:assembleDebug :app-phone:testDebugUnitTest
+  :app-phone:assembleDebug :app-tv:assembleDebug` → BUILD SUCCESSFUL; all unit tests pass.
+
+## 2026-06-08
+
+### Moves dictionary (phone) — Pokédex · Items · **Moves** · Team · Matchup
+
+Implemented the generation-scoped Moves dictionary per `wireframes/phone-moves.jsx`, mirroring
+the Items feature. Key difference vs. Items: **moves are strictly generation-scoped** (Items are
+national). The scoped id set is derived from PokéAPI `/generation/{id}` move lists (union of
+generations `1..selected`), giving an exact "through gen X" set + known total without per-move
+detail fetches; pages then resolve cache-first like Items.
+
+- **core/domain**: `Move` model (reuses `MoveCategory`; `type` nullable for non-battle types),
+  `MoveRepository` (`getMovePage(genId, offset, count)` / `searchMoves(genId, query)` /
+  `getMoveDetail(id)`), `MoveUseCases` (`GetMovePageUseCase` PAGE_SIZE=30, `SearchMovesUseCase`,
+  `GetMoveDetailUseCase`).
+- **core/data**: `MoveDtos` (`GenerationDto`, `MoveDetailDto`, `MoveEffectEntryDto`), `MoveEntity`
+  (flat; type-enum-name + damage-class slug), `MoveDao`, `MoveMappers` (gen-slug→id, English
+  short_effect, whitespace clean), `MoveRepositoryImpl` (mutex-guarded per-gen ref memoization,
+  scoped-window paging cache-first, gen-scoped name/id search). Added `getMoveDetail(id)` +
+  `getGeneration(id)` to `PokeApiService`; registered `MoveEntity` in `PokedexDatabase`
+  (v3→v4, destructive); `MoveDao` provider in `DataModule`; `MoveRepository` bind in `RepositoryModule`.
+- **app-phone** (`ui/moves/`): `MovesListScreen` (header + VersionChip, search bar, damage-class
+  chips All/Physical/Special/Status, paged list with skeleton/append/error, MoveRow = name +
+  TypeBadge + class label + mono power/acc·pp), `MovesListViewModel` (reloads the dictionary on
+  generation change — the behavioral delta from Items), `MovesListData`/`MovesSearchUiState`,
+  `MoveComponents` (dragon screen accent, damage-class colors), `MoveDetailScreen`
+  (type-colored gradient header, Power/Acc/PP stat tiles, Effect) + `MoveDetailViewModel`.
+  Added `Tab.Moves` + `MoveDetail` route to `NavDestination`/`PokedexNavHost`; strings in
+  `strings.xml`. Following the shipped Items pattern, used inline class chips instead of the
+  wireframe's decorative "Filter" FAB.
+- **Tests**: `MovesListViewModelTest` (first page / error / append / end-of-dict / **generation
+  change reloads** / class filter / search Idle·Results·Empty·Error→retry) and
+  `MoveDetailViewModelTest` (load by saved-state id; failure→Error→retry→Success), with fake
+  move/generation repos. 12 tests, all pass.
+- Verified: `gradlew :app-phone:assembleDebug :app-phone:testDebugUnitTest
+  :core:data:compileDebugKotlin` → BUILD SUCCESSFUL.

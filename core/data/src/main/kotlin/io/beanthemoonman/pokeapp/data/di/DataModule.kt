@@ -10,6 +10,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.beanthemoonman.pokeapp.data.local.PokedexDatabase
+import io.beanthemoonman.pokeapp.data.local.dao.ItemDao
+import io.beanthemoonman.pokeapp.data.local.dao.MoveDao
 import io.beanthemoonman.pokeapp.data.local.dao.PokemonDao
 import io.beanthemoonman.pokeapp.data.local.dao.PokemonDetailDao
 import io.beanthemoonman.pokeapp.data.local.dao.TeamDao
@@ -54,4 +56,10 @@ object DataModule {
 
     @Provides
     fun provideTeamDao(database: PokedexDatabase): TeamDao = database.teamDao()
+
+    @Provides
+    fun provideItemDao(database: PokedexDatabase): ItemDao = database.itemDao()
+
+    @Provides
+    fun provideMoveDao(database: PokedexDatabase): MoveDao = database.moveDao()
 }

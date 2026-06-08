@@ -28,7 +28,11 @@ import io.beanthemoonman.pokeapp.phone.R
 import io.beanthemoonman.pokeapp.phone.ui.AppStartViewModel
 import io.beanthemoonman.pokeapp.phone.ui.StartState
 import io.beanthemoonman.pokeapp.phone.ui.detail.PokemonDetailScreen
+import io.beanthemoonman.pokeapp.phone.ui.items.ItemDetailScreen
+import io.beanthemoonman.pokeapp.phone.ui.items.ItemsListScreen
 import io.beanthemoonman.pokeapp.phone.ui.list.PokemonListScreen
+import io.beanthemoonman.pokeapp.phone.ui.moves.MoveDetailScreen
+import io.beanthemoonman.pokeapp.phone.ui.moves.MovesListScreen
 import io.beanthemoonman.pokeapp.phone.ui.team.TeamScreen
 import io.beanthemoonman.pokeapp.phone.ui.typecalc.TypeMatchupScreen
 import io.beanthemoonman.pokeapp.phone.ui.version.VersionSelectScreen
@@ -95,6 +99,18 @@ fun PokedexNavHost(startAtSelector: Boolean) {
                     onSwitchGeneration = { navController.navigate(NavDestination.VersionSelect.route) },
                 )
             }
+            composable(NavDestination.Tab.Items.route) {
+                ItemsListScreen(
+                    onItemClick = { id -> navController.navigate(NavDestination.ItemDetail.routeFor(id)) },
+                    onSwitchGeneration = { navController.navigate(NavDestination.VersionSelect.route) },
+                )
+            }
+            composable(NavDestination.Tab.Moves.route) {
+                MovesListScreen(
+                    onMoveClick = { id -> navController.navigate(NavDestination.MoveDetail.routeFor(id)) },
+                    onSwitchGeneration = { navController.navigate(NavDestination.VersionSelect.route) },
+                )
+            }
             composable(NavDestination.Tab.Team.route) {
                 TeamScreen()
             }
@@ -106,6 +122,18 @@ fun PokedexNavHost(startAtSelector: Boolean) {
                 arguments = listOf(navArgument(NavDestination.Detail.ARG_ID) { type = NavType.IntType }),
             ) {
                 PokemonDetailScreen(onBack = { navController.popBackStack() })
+            }
+            composable(
+                route = NavDestination.ItemDetail.route,
+                arguments = listOf(navArgument(NavDestination.ItemDetail.ARG_ID) { type = NavType.IntType }),
+            ) {
+                ItemDetailScreen(onBack = { navController.popBackStack() })
+            }
+            composable(
+                route = NavDestination.MoveDetail.route,
+                arguments = listOf(navArgument(NavDestination.MoveDetail.ARG_ID) { type = NavType.IntType }),
+            ) {
+                MoveDetailScreen(onBack = { navController.popBackStack() })
             }
         }
     }
