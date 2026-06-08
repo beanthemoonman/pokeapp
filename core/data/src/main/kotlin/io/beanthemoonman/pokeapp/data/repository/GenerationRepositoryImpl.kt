@@ -8,6 +8,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.beanthemoonman.pokeapp.domain.repository.GenerationRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,9 +21,12 @@ class GenerationRepositoryImpl @Inject constructor(
 ) : GenerationRepository {
 
     override val selectedGenerationId: Flow<Int?> =
-        context.settingsDataStore.data.map { prefs -> prefs[KEY_SELECTED_GENERATION] }
+        context.settingsDataStore.data
+            .map { prefs -> prefs[KEY_SELECTED_GENERATION] }
+            .onEach { Timber.d("selectedGenerationId emitted -> %s", it) }
 
     override suspend fun selectGeneration(id: Int) {
+        Timber.i("selectGeneration persisting id=%d", id)
         context.settingsDataStore.edit { prefs -> prefs[KEY_SELECTED_GENERATION] = id }
     }
 

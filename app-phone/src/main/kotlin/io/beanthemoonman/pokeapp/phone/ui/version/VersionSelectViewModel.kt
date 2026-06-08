@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,6 +31,7 @@ class VersionSelectViewModel @Inject constructor(
     /** Persist the choice, then invoke [onSelected] (used to navigate into the shell). */
     fun select(id: Int, onSelected: () -> Unit) {
         viewModelScope.launch {
+            Timber.i("user selected generation id=%d", id)
             selectGeneration(id)
             onSelected()
         }

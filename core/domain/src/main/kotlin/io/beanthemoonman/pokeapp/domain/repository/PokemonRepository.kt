@@ -8,7 +8,11 @@ import kotlinx.coroutines.flow.Flow
  * Implementations check the local cache first and fetch from the API on miss.
  */
 interface PokemonRepository {
-    fun getPokemonList(limit: Int, offset: Int): Flow<List<Pokemon>>
+    /**
+     * One page of the National Dex: entries with id in `[startId, startId + count)`.
+     * Cache-first per entry — cached rows are returned directly, misses are fetched and cached.
+     */
+    suspend fun getPokemonPage(startId: Int, count: Int): List<Pokemon>
     suspend fun getPokemonDetail(id: Int): Pokemon
     fun getTeam(): Flow<List<Pokemon?>>
     suspend fun setTeamSlot(slot: Int, pokemonId: Int?)

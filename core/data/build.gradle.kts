@@ -51,6 +51,9 @@ dependencies {
     // DataStore (selected-generation preference)
     implementation(libs.androidx.datastore.preferences)
 
+    // Logging
+    implementation(libs.timber)
+
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }

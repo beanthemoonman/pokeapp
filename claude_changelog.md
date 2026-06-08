@@ -76,3 +76,44 @@ Implemented the generation context decided in the wireframe pass.
   - `PokemonListViewModel` is generation-scoped: observes the selected generation and loads National Dex `#1..dexEnd` via `flatMapLatest`; exposes `generation` for the header. List header now shows the `VersionChip` + "NATIONAL · THROUGH GEN X" + `/dexEnd`.
   - Updated `PokemonListViewModelTest` for the new constructor (fake `GenerationRepository`).
 - Verified: `gradlew :core:domain:test :app-phone:testDebugUnitTest :app-phone:assembleDebug :app-tv:assembleDebug :core:data:assembleDebug` → BUILD SUCCESSFUL; all unit tests pass.
+
+### List pagination + sprite caching (bug fix)
+
+- **Bug fixed: selecting a high generation (e.g. Paldea) showed Kanto.** Root cause was the old eager loader: `getPokemonList(dexEnd, 0)` fired ~`dexEnd` detail calls (1025 for Gen IX) before emitting, and on *any* failure the `catch` fell back to whatever was already cached (the low-numbered Kanto entries). Replaced with real pagination.
+  - **Repository**: `getPokemonList(limit, offset): Flow` → **`getPokemonPage(startId, count): List<Pokemon>`** — cache-first by National Dex id window: reads cached rows via new `PokemonDao.getByIds`, fetches only the missing ids (bounded chunks of 12), upserts, returns the window in order. Failures propagate so the UI can show a page error. Removed the unused `pageFlow`/`count` DAO queries.
+  - **Domain**: replaced `GetPokemonListUseCase` with `GetPokemonPageUseCase` (clamps the window to the active generation's `dexEnd`; `PAGE_SIZE = 30`).
+  - **app-phone**: `PokemonListViewModel` now pages — `UiState<PokemonListData>` where `PokemonListData(items, isAppending, appendError, endReached)`; restarts on generation change, `loadMore()` appends, `retry()` covers first-page error and append error. `PokemonListScreen` drives paging from `LazyListState` (loads the next page within 6 rows of the end), renders skeleton rows while appending and a "Load more" retry on append failure. Generation cap is honored, so Gen IX now pages through all 1025 instead of eager-loading.
+- **Sprite caching**: `PokedexApplication` implements `ImageLoaderFactory` — app-wide Coil `ImageLoader` with a persistent 256 MB disk cache (`cacheDir/sprite_cache`), 25% memory cache, and `respectCacheHeaders(false)` (sprites are large and effectively immutable, so they're reused across sessions without refetching). Added `coil.compose` to app-phone.
+- Updated `PokemonListViewModelTest` for pagination (first page, first-page error, append, end-of-dex). Updated `CLAUDE.md` repository snippet.
+- Note: the dex is still the **cumulative National Dex #1..dexEnd** (the earlier decision), so a Paldea selection legitimately starts at #1 Bulbasaur and pages through to #1025 — the header shows "GEN IX · /1025". If regional dexes (Paldea-only species) are wanted instead, that's a separate change.
+- Verified: `gradlew :core:domain:test :core:data:assembleDebug :app-phone:testDebugUnitTest :app-phone:assembleDebug` → BUILD SUCCESSFUL; all unit tests pass.
+
+### Bug fix — paging breaks (stuck at 30) after switching generations
+
+- **Root cause** (in `PokemonListScreen.LoadedList`): the load-more trigger used `remember { derivedStateOf { … data.items.size … } }` with **no keys**, so the lambda closed over the *first* `data`. On the initial generation it kept working (the frozen size stayed exceeded while scrolling), but switching generations conflated the brief `Loading` `StateFlow` emission on a fast cached reload, so `LoadedList` never left composition and the closure kept the *previous* generation's larger `items.size`. `lastVisible >= oldSize - 6` was then never true again → `loadMore` never fired → stuck at the first 30.
+- **Fix**: key the derivation on the live `itemCount` + paging flags (`remember(itemCount, canPage) { derivedStateOf { … } }`) so it can't capture stale data; and reset scroll to the top (`LaunchedEffect(resetKey = generation.id) { scrollToItem(0) }`) when the generation changes so a restored deep scroll position doesn't immediately over-page.
+- Added a VM regression test (`switching generation resets paging and keeps paging`): pages, switches Gen I → Gen III, asserts the list resets to page 1 (#1 first) and that `loadMore` still appends afterward. Fake generation repo is now a `MutableStateFlow` so switches can be exercised.
+- Verified: `gradlew :app-phone:assembleDebug :app-phone:testDebugUnitTest` → BUILD SUCCESSFUL; all tests pass.
+
+### Bug fix (real root cause) — paging stuck at 30 after switching generations
+
+The earlier screen-side fix (keyed `derivedStateOf` + scroll reset) was necessary but not the actual cause. The real defect was in `PokemonListViewModel`: both paging coroutines used `catch (e: Exception) { … }`, which **also catches `CancellationException`**. Switching generations calls `pagingJob?.cancel()` to stop the previous generation's in-flight load; that cancellation threw `CancellationException`, which the `catch` swallowed and turned into a corrupted state write — `appendError = true` (or `Error`) carrying the *previous* generation's `data`, and a stale `nextStartId`. `appendError`/`isAppending` make `canPage` false, so the list never requested another page → permanently stuck at the first 30.
+
+- **Fix**: in both `loadFirstPage` and `loadMore`, rethrow `CancellationException` and `ensureActive()` before committing, so a cancelled load can never write state or advance `nextStartId`.
+- **Test**: added `switching while a page load is in flight does not corrupt paging` — starts an append, switches generation mid-flight (cancelling it), and asserts no `appendError`/stuck `isAppending`, the list resets to page 1, and `loadMore` still works. `FakeRepository` gained an optional `delayMillis` so an in-flight load can be held across the switch.
+- Verified: `gradlew :app-phone:testDebugUnitTest :app-phone:assembleDebug` → BUILD SUCCESSFUL; all tests pass.
+
+### Logging standards + instrumentation
+
+The paging-after-switch bug is still reproducing despite two attempted fixes, so added proper logging to diagnose with real evidence instead of guessing.
+
+- **`CLAUDE.md`**: new **Logging** section — use **Timber** (no `android.util.Log`/`println`); plant `DebugTree` only in debug (`BuildConfig.DEBUG`); automatic class-name tags; level guidance (v/d/i/w/e); format-args not concatenation; log at boundaries (repo, ViewModel, navigation/selection); keep `core/domain` pure (no logging); greppable structured messages; no secrets/PII.
+- **Dependency**: added Timber (`com.jakewharton.timber:timber:5.0.1`) to the catalog + `app-phone` and `core:data`. Enabled `buildConfig` for `app-phone`; `PokedexApplication.onCreate` plants `Timber.DebugTree()` in debug.
+- **Instrumented** the paging path end-to-end:
+  - `PokemonListViewModel`: generation-change → restart, `loadFirstPage`/`loadMore` fetch + result (gen id, startId, page size, total, `nextStartId`, `endReached`), every skip reason (`isAppending`/`endReached`/non-Success), cancellations, and errors.
+  - `PokemonRepositoryImpl.getPokemonPage`: window, cache-hit vs missing counts, API fetch size, returned size.
+  - `GenerationRepositoryImpl`: `selectGeneration` writes + `selectedGenerationId` emissions.
+  - `PokemonListScreen.LoadedList`: `resetKey` scroll-to-top and each `loadMore` trigger (with `shouldLoadMore`/`itemCount`/`canPage`/`lastVisible`).
+  - `VersionSelectViewModel.select` and `AppStartViewModel` start-gate transitions.
+- The cancellation-safety fix (rethrow `CancellationException` + `ensureActive`) and the screen keyed-`derivedStateOf` fix remain in place.
+- Verified: `gradlew :core:data:assembleDebug :app-phone:testDebugUnitTest :app-phone:assembleDebug` → BUILD SUCCESSFUL; all tests pass.

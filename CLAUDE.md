@@ -129,6 +129,31 @@ implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
 
 ---
 
+## Logging
+
+Use **Timber** for all logging in Android modules. Do not call `android.util.Log` directly, and
+never use `println`.
+
+- **Setup**: plant a `Timber.DebugTree` only in debug builds (in `PokedexApplication.onCreate`, gated
+  on `BuildConfig.DEBUG`). Release builds plant no tree, so log calls become no-ops. Tags are
+  automatic (Timber uses the class name) — never pass a manual tag.
+- **Levels**:
+  - `Timber.v` — high-volume tracing (per-item, per-scroll). Avoid in hot loops.
+  - `Timber.d` — normal dev flow: state transitions, cache hit/miss, paging decisions.
+  - `Timber.i` — notable user/lifecycle events: generation selected, screen entered.
+  - `Timber.w` — recoverable problems: offline fallback, empty page, skipped action.
+  - `Timber.e(throwable, …)` — failures; always pass the throwable as the first argument.
+- **Format args, not concatenation**: `Timber.d("page start=%d count=%d", startId, count)` — keeps
+  formatting lazy so it's skipped when no tree is planted.
+- **Log at boundaries**: repository (cache vs network, sizes), ViewModel (every state transition and
+  *why* a paging/loading decision was taken), navigation/selection events. Keep `core/domain` pure —
+  **no logging there** (it has no Android dependency).
+- **Be greppable and structured**: include the key identifiers (generation id, `startId`/`count`,
+  page/item counts, state names). One event per line.
+- **Never log secrets or PII.** PokéAPI needs no auth; still, don't dump full payloads or tokens.
+
+---
+
 ## Architecture Rules
 
 ### Data Flow
@@ -182,7 +207,7 @@ Define interfaces in `core/domain`, implement in `core/data`:
 ```kotlin
 // core/domain
 interface PokemonRepository {
-    fun getPokemonList(limit: Int, offset: Int): Flow<List<Pokemon>>
+    suspend fun getPokemonPage(startId: Int, count: Int): List<Pokemon>  // National Dex window, cache-first per entry
     suspend fun getPokemonDetail(id: Int): Pokemon
     fun getTeam(): Flow<List<Pokemon?>>
     suspend fun setTeamSlot(slot: Int, pokemonId: Int?)

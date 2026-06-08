@@ -6,19 +6,22 @@ import io.beanthemoonman.pokeapp.domain.model.Type
 import io.beanthemoonman.pokeapp.domain.model.UiState
 import io.beanthemoonman.pokeapp.domain.repository.GenerationRepository
 import io.beanthemoonman.pokeapp.domain.repository.PokemonRepository
-import io.beanthemoonman.pokeapp.domain.usecase.GetPokemonListUseCase
+import io.beanthemoonman.pokeapp.domain.usecase.GetPokemonPageUseCase
 import io.beanthemoonman.pokeapp.domain.usecase.ObserveSelectedGenerationUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -39,19 +42,22 @@ class PokemonListViewModelTest {
     }
 
     @Test
-    fun `emits Success when repository returns pokemon`() = runTest(dispatcher) {
-        val vm = newViewModel(FakeRepository(listOf(bulbasaur)))
+    fun `first page loads into Success`() = runTest(dispatcher) {
+        val vm = newViewModel(FakeRepository(total = 151))
 
         dispatcher.scheduler.advanceUntilIdle()
 
         val state = vm.state.value
         assertTrue(state is UiState.Success)
-        assertEquals(listOf(bulbasaur), (state as UiState.Success).data)
+        val data = (state as UiState.Success).data
+        assertEquals(GetPokemonPageUseCase.PAGE_SIZE, data.items.size)
+        assertEquals(1, data.items.first().id)
+        assertFalse(data.endReached)
     }
 
     @Test
-    fun `emits Error when repository returns an empty page`() = runTest(dispatcher) {
-        val vm = newViewModel(FakeRepository(emptyList()))
+    fun `first page failure surfaces Error`() = runTest(dispatcher) {
+        val vm = newViewModel(FakeRepository(total = 151, throwing = true))
 
         dispatcher.scheduler.advanceUntilIdle()
 
@@ -59,48 +65,126 @@ class PokemonListViewModelTest {
     }
 
     @Test
-    fun `emits Error when the repository flow throws`() = runTest(dispatcher) {
-        val vm = newViewModel(FakeRepository(throwing = true))
-
+    fun `loadMore appends the next page`() = runTest(dispatcher) {
+        val vm = newViewModel(FakeRepository(total = 151))
         dispatcher.scheduler.advanceUntilIdle()
 
-        assertTrue(vm.state.value is UiState.Error)
+        vm.loadMore()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val data = (vm.state.value as UiState.Success).data
+        assertEquals(GetPokemonPageUseCase.PAGE_SIZE * 2, data.items.size)
+        // Pages are contiguous National Dex ids.
+        assertEquals((1..data.items.size).toList(), data.items.map { it.id })
     }
 
-    /** Builds the VM with a generation already selected (Gen I), so the list pipeline runs. */
+    @Test
+    fun `paging stops at the end of the dex`() = runTest(dispatcher) {
+        // Only 40 entries available: page 1 = 30, page 2 = 10 (< PAGE_SIZE) → end.
+        val vm = newViewModel(FakeRepository(total = 40))
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.loadMore()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val data = (vm.state.value as UiState.Success).data
+        assertEquals(40, data.items.size)
+        assertTrue(data.endReached)
+    }
+
+    @Test
+    fun `switching generation resets paging and keeps paging`() = runTest(dispatcher) {
+        val genRepo = FakeGenerationRepository(selectedId = 1) // Gen I, dexEnd 151
+        val vm = PokemonListViewModel(
+            GetPokemonPageUseCase(FakeRepository(total = 400)),
+            ObserveSelectedGenerationUseCase(genRepo),
+        )
+        dispatcher.scheduler.advanceUntilIdle()
+        vm.loadMore()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(GetPokemonPageUseCase.PAGE_SIZE * 2, (vm.state.value as UiState.Success).data.items.size)
+
+        // Switch to Gen III — paging must restart from page 1, not stay where it was.
+        genRepo.selectGeneration(3)
+        dispatcher.scheduler.advanceUntilIdle()
+        val afterSwitch = (vm.state.value as UiState.Success).data
+        assertEquals(GetPokemonPageUseCase.PAGE_SIZE, afterSwitch.items.size)
+        assertEquals(1, afterSwitch.items.first().id)
+
+        // ...and loadMore still appends after the switch.
+        vm.loadMore()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(GetPokemonPageUseCase.PAGE_SIZE * 2, (vm.state.value as UiState.Success).data.items.size)
+    }
+
+    @Test
+    fun `switching while a page load is in flight does not corrupt paging`() = runTest(dispatcher) {
+        val genRepo = FakeGenerationRepository(selectedId = 1)
+        val vm = PokemonListViewModel(
+            GetPokemonPageUseCase(FakeRepository(total = 400, delayMillis = 100)),
+            ObserveSelectedGenerationUseCase(genRepo),
+        )
+        dispatcher.scheduler.advanceUntilIdle() // first page of Gen I
+
+        // Begin an append, then switch generation while it is still in flight.
+        vm.loadMore()
+        dispatcher.scheduler.runCurrent() // let loadMore start + suspend (isAppending = true)
+        genRepo.selectGeneration(3)        // cancels the in-flight append
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val data = (vm.state.value as UiState.Success).data
+        // The cancelled append must NOT have flipped appendError / left isAppending stuck.
+        assertFalse(data.appendError)
+        assertFalse(data.isAppending)
+        assertEquals(GetPokemonPageUseCase.PAGE_SIZE, data.items.size)
+        assertEquals(1, data.items.first().id)
+
+        // Paging still works after the switch.
+        vm.loadMore()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(GetPokemonPageUseCase.PAGE_SIZE * 2, (vm.state.value as UiState.Success).data.items.size)
+    }
+
     private fun newViewModel(repo: FakeRepository) = PokemonListViewModel(
-        GetPokemonListUseCase(repo),
+        GetPokemonPageUseCase(repo),
         ObserveSelectedGenerationUseCase(FakeGenerationRepository(selectedId = 1)),
     )
 
     private class FakeRepository(
-        private val data: List<Pokemon> = emptyList(),
+        private val total: Int,
         private val throwing: Boolean = false,
+        private val delayMillis: Long = 0,
     ) : PokemonRepository {
-        override fun getPokemonList(limit: Int, offset: Int): Flow<List<Pokemon>> = flow {
+        override suspend fun getPokemonPage(startId: Int, count: Int): List<Pokemon> {
+            if (delayMillis > 0) delay(delayMillis)
             if (throwing) throw RuntimeException("boom")
-            emit(data)
+            val end = minOf(startId + count - 1, total)
+            if (startId > end) return emptyList()
+            return (startId..end).map { pokemon(it) }
         }
 
-        override suspend fun getPokemonDetail(id: Int): Pokemon = bulbasaur
+        override suspend fun getPokemonDetail(id: Int): Pokemon = pokemon(id)
         override fun getTeam(): Flow<List<Pokemon?>> = flow { emit(emptyList()) }
         override suspend fun setTeamSlot(slot: Int, pokemonId: Int?) = Unit
     }
 
-    private class FakeGenerationRepository(private val selectedId: Int?) : GenerationRepository {
-        override val selectedGenerationId: Flow<Int?> = flowOf(selectedId)
-        override suspend fun selectGeneration(id: Int) = Unit
+    private class FakeGenerationRepository(selectedId: Int?) : GenerationRepository {
+        private val flow = MutableStateFlow(selectedId)
+        override val selectedGenerationId: Flow<Int?> = flow
+        override suspend fun selectGeneration(id: Int) {
+            flow.value = id
+        }
     }
 
     private companion object {
-        val bulbasaur = Pokemon(
-            id = 1,
-            name = "Bulbasaur",
-            spriteUrl = "https://example.com/1.png",
-            types = listOf(Type.GRASS, Type.POISON),
-            stats = Stats(45, 49, 49, 65, 65, 45),
-            height = 7,
-            weight = 69,
+        fun pokemon(id: Int) = Pokemon(
+            id = id,
+            name = "Pokemon$id",
+            spriteUrl = "https://example.com/$id.png",
+            types = listOf(Type.NORMAL),
+            stats = Stats(1, 1, 1, 1, 1, 1),
+            height = 1,
+            weight = 1,
         )
     }
 }

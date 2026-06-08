@@ -1,0 +1,27 @@
+Started in Chat and Design, can assume like $20 of use.
+
+6/7/2026
+ Session
+
+ Total cost:            $39.82
+ Total duration (API):  1h 18m 58s
+ Total duration (wall): 2h 37m 25s
+ Total code changes:    3906 lines added, 288 lines removed
+ Usage by model:
+     claude-haiku-4-5:  115.0k input, 3.7k output, 0 cache read, 0 cache write, 2 web search ($0.1534)
+      claude-opus-4-8:  24.6k input, 332.7k output, 54.1m cache read, 665.0k cache write ($39.66)
+
+ Current session
+ ████████████████████████████████████████████████   96% used
+ Resets 1am (America/New_York)
+
+ What's contributing to your limits usage?
+ Approximate, based on local sessions on this machine — does not include other devices or claude.ai
+
+ Last 24h · these are independent characteristics of your usage, not a breakdown
+
+ 69% of your usage was at >150k context
+  Longer sessions are more expensive even when cached. /compact mid-task, /clear when switching to new tasks.
+
+ Skills, subagents, plugins, and MCP servers
+ No attribution data yet · accumulates as you use Claude

@@ -7,7 +7,9 @@ import io.beanthemoonman.pokeapp.domain.usecase.ObserveSelectedGenerationUseCase
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import timber.log.Timber
 import javax.inject.Inject
 
 /** Where the app should open: the selector (no choice yet) or the main shell. */
@@ -20,5 +22,6 @@ class AppStartViewModel @Inject constructor(
 
     val startState: StateFlow<StartState> = observeSelectedGeneration()
         .map { if (it == null) StartState.Selector else StartState.Shell }
+        .onEach { Timber.i("app start gate -> %s", it) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, StartState.Loading)
 }

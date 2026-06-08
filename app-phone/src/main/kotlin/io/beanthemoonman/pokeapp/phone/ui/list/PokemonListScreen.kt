@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ErrorOutline
@@ -23,7 +24,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import timber.log.Timber
 import io.beanthemoonman.pokeapp.domain.model.Generation
 import io.beanthemoonman.pokeapp.domain.model.Pokemon
 import io.beanthemoonman.pokeapp.domain.model.Type
@@ -61,7 +66,8 @@ fun PokemonListScreen(
         state = state,
         generation = generation,
         onPokemonClick = onPokemonClick,
-        onRetry = viewModel::load,
+        onRetry = viewModel::retry,
+        onLoadMore = viewModel::loadMore,
         onSwitchGeneration = onSwitchGeneration,
         modifier = modifier,
     )
@@ -69,15 +75,16 @@ fun PokemonListScreen(
 
 @Composable
 private fun PokemonListContent(
-    state: UiState<List<Pokemon>>,
+    state: UiState<PokemonListData>,
     generation: Generation?,
     onPokemonClick: (Int) -> Unit,
     onRetry: () -> Unit,
+    onLoadMore: () -> Unit,
     onSwitchGeneration: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxSize().background(PokedexColors.Background)) {
-        val loadedCount = (state as? UiState.Success)?.data?.size ?: 0
+        val loadedCount = (state as? UiState.Success)?.data?.items?.size ?: 0
         ListHeader(
             loadedCount = loadedCount,
             generation = generation,
@@ -86,7 +93,13 @@ private fun PokemonListContent(
         when (state) {
             is UiState.Loading -> LoadingList()
             is UiState.Error -> ErrorState(message = state.message, onRetry = onRetry)
-            is UiState.Success -> LoadedList(pokemon = state.data, onPokemonClick = onPokemonClick)
+            is UiState.Success -> LoadedList(
+                data = state.data,
+                resetKey = generation?.id,
+                onPokemonClick = onPokemonClick,
+                onLoadMore = onLoadMore,
+                onRetryAppend = onRetry,
+            )
         }
     }
 }
@@ -165,11 +178,70 @@ private fun SearchBar(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun LoadedList(pokemon: List<Pokemon>, onPokemonClick: (Int) -> Unit) {
-    LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 16.dp)) {
-        items(items = pokemon, key = { it.id }) { p ->
+private fun LoadedList(
+    data: PokemonListData,
+    resetKey: Any?,
+    onPokemonClick: (Int) -> Unit,
+    onLoadMore: () -> Unit,
+    onRetryAppend: () -> Unit,
+) {
+    val listState = rememberLazyListState()
+
+    // When the generation changes the list is a fresh dex — jump back to the top so a
+    // restored deep scroll position doesn't immediately trigger paging.
+    LaunchedEffect(resetKey) {
+        Timber.d("LoadedList resetKey=%s -> scrollToItem(0)", resetKey)
+        listState.scrollToItem(0)
+    }
+
+    // Request the next page as the user nears the end of what's loaded. Keyed on the
+    // current item count + paging flags so the derivation never closes over stale data.
+    val itemCount = data.items.size
+    val canPage = !data.endReached && !data.isAppending && !data.appendError
+    val shouldLoadMore by remember(itemCount, canPage) {
+        derivedStateOf {
+            canPage &&
+                (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) >= itemCount - LOAD_MORE_THRESHOLD
+        }
+    }
+    LaunchedEffect(shouldLoadMore) {
+        Timber.v("shouldLoadMore=%b itemCount=%d canPage=%b lastVisible=%d", shouldLoadMore, itemCount, canPage, listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1)
+        if (shouldLoadMore) {
+            Timber.d("LoadedList requesting next page (itemCount=%d)", itemCount)
+            onLoadMore()
+        }
+    }
+
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 16.dp),
+    ) {
+        items(items = data.items, key = { it.id }) { p ->
             ListRow(pokemon = p, onClick = { onPokemonClick(p.id) })
             Divider()
+        }
+        when {
+            data.appendError -> item { AppendError(onRetry = onRetryAppend) }
+            data.isAppending -> items(count = 3) { SkeletonRow(); Divider() }
+        }
+    }
+}
+
+@Composable
+private fun AppendError(onRetry: () -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Button(
+            onClick = onRetry,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = PokedexColors.SurfaceRaised,
+                contentColor = PokedexColors.TextPrimary,
+            ),
+        ) {
+            Text(text = stringResource(R.string.list_load_more_retry))
         }
     }
 }
@@ -303,3 +375,6 @@ private fun Divider() {
 
 /** Formats a national dex id as a zero-padded `#001` label. */
 private fun dexNumber(id: Int): String = "#%03d".format(id)
+
+/** Trigger the next page once the user is within this many rows of the end. */
+private const val LOAD_MORE_THRESHOLD = 6

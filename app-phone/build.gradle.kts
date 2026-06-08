@@ -32,6 +32,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     compileOptions {
@@ -69,6 +70,12 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
+
+    // Coil (app-wide image loader with sprite disk cache)
+    implementation(libs.coil.compose)
+
+    // Logging
+    implementation(libs.timber)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
 

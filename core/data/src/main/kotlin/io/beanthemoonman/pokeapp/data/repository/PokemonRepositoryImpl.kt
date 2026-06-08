@@ -12,11 +12,11 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,24 +31,33 @@ class PokemonRepositoryImpl @Inject constructor(
     private val teamDao: TeamDao
 ) : PokemonRepository {
 
-    override fun getPokemonList(limit: Int, offset: Int): Flow<List<Pokemon>> = flow {
-        // Best-effort refresh of this page; on failure we fall back to whatever is cached.
-        try {
-            val page = api.getPokemonList(limit, offset)
-            // Fetch detail in bounded chunks so we never fan out hundreds of parallel calls.
-            val details = page.results.chunked(DETAIL_FETCH_CHUNK).flatMap { chunk ->
-                coroutineScope {
-                    chunk.map { ref -> async { api.getPokemonDetail(ref.id) } }.awaitAll()
-                }
+    override suspend fun getPokemonPage(startId: Int, count: Int): List<Pokemon> =
+        withContext(Dispatchers.IO) {
+            if (count <= 0) {
+                Timber.w("getPokemonPage no-op: count=%d (start=%d)", count, startId)
+                return@withContext emptyList()
             }
-            pokemonDao.upsertAll(details.map { it.toEntity(System.currentTimeMillis()) })
-        } catch (_: Exception) {
-            // Offline / API error: serve the cached page below.
+            val ids = (startId until startId + count).toList()
+
+            // Cache-first: only the ids missing from Room are fetched (in bounded chunks),
+            // then upserted. A failure here propagates so the caller can show a page error.
+            val cachedIds = pokemonDao.getByIds(ids).map { it.id }.toSet()
+            val missing = ids.filterNot { it in cachedIds }
+            Timber.d("getPokemonPage start=%d count=%d cached=%d missing=%d", startId, count, cachedIds.size, missing.size)
+            if (missing.isNotEmpty()) {
+                Timber.d("getPokemonPage fetching %d ids from API (chunks of %d)", missing.size, DETAIL_FETCH_CHUNK)
+                val fetched = missing.chunked(DETAIL_FETCH_CHUNK).flatMap { chunk ->
+                    coroutineScope {
+                        chunk.map { id -> async { api.getPokemonDetail(id) } }.awaitAll()
+                    }
+                }
+                pokemonDao.upsertAll(fetched.map { it.toEntity(System.currentTimeMillis()) })
+                Timber.d("getPokemonPage cached %d newly fetched entries", fetched.size)
+            }
+
+            pokemonDao.getByIds(ids).map { it.toDomain() }
+                .also { Timber.d("getPokemonPage returning %d entries (start=%d)", it.size, startId) }
         }
-        emitAll(
-            pokemonDao.pageFlow(limit, offset).map { rows -> rows.map { it.toDomain() } }
-        )
-    }.flowOn(Dispatchers.IO)
 
     override suspend fun getPokemonDetail(id: Int): Pokemon {
         pokemonDao.getById(id)?.let { return it.toDomain() }
