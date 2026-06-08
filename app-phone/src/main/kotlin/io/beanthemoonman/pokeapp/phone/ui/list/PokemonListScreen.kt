@@ -2,6 +2,7 @@ package io.beanthemoonman.pokeapp.phone.ui.list
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +17,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
@@ -31,9 +35,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,9 +69,16 @@ fun PokemonListScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val generation by viewModel.generation.collectAsStateWithLifecycle()
+    val query by viewModel.query.collectAsStateWithLifecycle()
+    val searchState by viewModel.searchState.collectAsStateWithLifecycle()
     PokemonListContent(
         state = state,
         generation = generation,
+        query = query,
+        searchState = searchState,
+        onQueryChange = viewModel::onQueryChange,
+        onClearSearch = viewModel::clearSearch,
+        onRetrySearch = viewModel::retrySearch,
         onPokemonClick = onPokemonClick,
         onRetry = viewModel::retry,
         onLoadMore = viewModel::loadMore,
@@ -77,6 +91,11 @@ fun PokemonListScreen(
 private fun PokemonListContent(
     state: UiState<PokemonListData>,
     generation: Generation?,
+    query: String,
+    searchState: SearchUiState,
+    onQueryChange: (String) -> Unit,
+    onClearSearch: () -> Unit,
+    onRetrySearch: () -> Unit,
     onPokemonClick: (Int) -> Unit,
     onRetry: () -> Unit,
     onLoadMore: () -> Unit,
@@ -88,17 +107,31 @@ private fun PokemonListContent(
         ListHeader(
             loadedCount = loadedCount,
             generation = generation,
+            query = query,
+            onQueryChange = onQueryChange,
+            onClearSearch = onClearSearch,
             onSwitchGeneration = onSwitchGeneration,
         )
-        when (state) {
-            is UiState.Loading -> LoadingList()
-            is UiState.Error -> ErrorState(message = state.message, onRetry = onRetry)
-            is UiState.Success -> LoadedList(
-                data = state.data,
-                resetKey = generation?.id,
+        // While a query is active the search results replace the paged dex; the paged
+        // list (and its scroll position) stays mounted underneath only when Idle.
+        when (searchState) {
+            is SearchUiState.Idle -> when (state) {
+                is UiState.Loading -> LoadingList()
+                is UiState.Error -> ErrorState(message = state.message, onRetry = onRetry)
+                is UiState.Success -> LoadedList(
+                    data = state.data,
+                    resetKey = generation?.id,
+                    onPokemonClick = onPokemonClick,
+                    onLoadMore = onLoadMore,
+                    onRetryAppend = onRetry,
+                )
+            }
+            is SearchUiState.Loading -> LoadingList()
+            is SearchUiState.Empty -> SearchEmptyState(query = query)
+            is SearchUiState.Error -> SearchErrorState(onRetry = onRetrySearch)
+            is SearchUiState.Results -> SearchResultsList(
+                items = searchState.items,
                 onPokemonClick = onPokemonClick,
-                onLoadMore = onLoadMore,
-                onRetryAppend = onRetry,
             )
         }
     }
@@ -108,6 +141,9 @@ private fun PokemonListContent(
 private fun ListHeader(
     loadedCount: Int,
     generation: Generation?,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onClearSearch: () -> Unit,
     onSwitchGeneration: () -> Unit,
 ) {
     Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 12.dp)) {
@@ -145,12 +181,24 @@ private fun ListHeader(
                 fontFamily = FontFamily.Monospace,
             )
         }
-        SearchBar(modifier = Modifier.padding(top = 14.dp))
+        SearchBar(
+            query = query,
+            dexEnd = generation?.dexEnd ?: 0,
+            onQueryChange = onQueryChange,
+            onClearSearch = onClearSearch,
+            modifier = Modifier.padding(top = 14.dp),
+        )
     }
 }
 
 @Composable
-private fun SearchBar(modifier: Modifier = Modifier) {
+private fun SearchBar(
+    query: String,
+    dexEnd: Int,
+    onQueryChange: (String) -> Unit,
+    onClearSearch: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val shape = RoundedCornerShape(12.dp)
     Row(
         modifier = modifier
@@ -169,11 +217,126 @@ private fun SearchBar(modifier: Modifier = Modifier) {
             tint = PokedexColors.TextFaint,
             modifier = Modifier.size(18.dp),
         )
-        Text(
-            text = stringResource(R.string.list_search_hint),
-            color = PokedexColors.TextFaint,
-            fontSize = 14.5.sp,
+        BasicTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier.weight(1f),
+            singleLine = true,
+            textStyle = TextStyle(
+                color = PokedexColors.TextPrimary,
+                fontSize = 14.5.sp,
+            ),
+            cursorBrush = SolidColor(Type.FIRE.color()),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            decorationBox = { innerTextField ->
+                if (query.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.list_search_hint),
+                        color = PokedexColors.TextFaint,
+                        fontSize = 14.5.sp,
+                    )
+                }
+                innerTextField()
+            },
         )
+        if (query.isEmpty()) {
+            Text(
+                text = dexEnd.toString(),
+                color = PokedexColors.TextFaint,
+                fontSize = 11.sp,
+                fontFamily = FontFamily.Monospace,
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Outlined.Close,
+                contentDescription = stringResource(R.string.list_search_clear),
+                tint = PokedexColors.TextDim,
+                modifier = Modifier
+                    .size(18.dp)
+                    .clip(RoundedCornerShape(50))
+                    .clickable(onClick = onClearSearch),
+            )
+        }
+    }
+}
+
+@Composable
+private fun SearchResultsList(
+    items: List<Pokemon>,
+    onPokemonClick: (Int) -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 16.dp),
+    ) {
+        items(items = items, key = { it.id }) { p ->
+            ListRow(pokemon = p, onClick = { onPokemonClick(p.id) })
+            Divider()
+        }
+    }
+}
+
+@Composable
+private fun SearchEmptyState(query: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 40.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Search,
+            contentDescription = null,
+            tint = PokedexColors.TextFaint,
+            modifier = Modifier.size(40.dp),
+        )
+        Text(
+            text = stringResource(R.string.list_search_empty_title),
+            color = PokedexColors.TextPrimary,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            text = stringResource(R.string.list_search_empty_body, query),
+            color = PokedexColors.TextDim,
+            fontSize = 13.5.sp,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+private fun SearchErrorState(onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 40.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.ErrorOutline,
+            contentDescription = null,
+            tint = Type.FIRE.color(),
+            modifier = Modifier.size(36.dp),
+        )
+        Text(
+            text = stringResource(R.string.list_search_error),
+            color = PokedexColors.TextDim,
+            fontSize = 13.5.sp,
+            textAlign = TextAlign.Center,
+        )
+        Button(
+            onClick = onRetry,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = PokedexColors.SurfaceRaised,
+                contentColor = PokedexColors.TextPrimary,
+            ),
+        ) {
+            Text(text = stringResource(R.string.list_retry))
+        }
     }
 }
 

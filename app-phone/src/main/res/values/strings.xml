@@ -11,6 +11,10 @@
     <string name="list_title">Pokédex</string>
     <string name="list_subtitle">NATIONAL · THROUGH GEN %1$s</string>
     <string name="list_search_hint">Search name or №</string>
+    <string name="list_search_clear">Clear search</string>
+    <string name="list_search_empty_title">No matches</string>
+    <string name="list_search_empty_body">Nothing in this Pokédex matches “%1$s”.</string>
+    <string name="list_search_error">Couldn\'t search right now. Check your connection and try again.</string>
     <string name="list_count">%1$d / %2$d</string>
     <string name="list_error_title">Couldn\'t load the Pokédex</string>
     <string name="list_error_body">Check your connection and try again. Your saved data is still available offline.</string>

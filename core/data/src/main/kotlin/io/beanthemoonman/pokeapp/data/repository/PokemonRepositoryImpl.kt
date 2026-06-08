@@ -6,6 +6,8 @@ import io.beanthemoonman.pokeapp.data.local.entity.TeamEntity
 import io.beanthemoonman.pokeapp.data.mapper.toDomain
 import io.beanthemoonman.pokeapp.data.mapper.toEntity
 import io.beanthemoonman.pokeapp.data.remote.PokeApiService
+import io.beanthemoonman.pokeapp.data.remote.dto.NamedApiResourceDto
+import io.beanthemoonman.pokeapp.domain.model.Generations
 import io.beanthemoonman.pokeapp.domain.model.Pokemon
 import io.beanthemoonman.pokeapp.domain.repository.PokemonRepository
 import kotlinx.coroutines.async
@@ -14,6 +16,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 import timber.log.Timber
@@ -30,6 +34,9 @@ class PokemonRepositoryImpl @Inject constructor(
     private val pokemonDao: PokemonDao,
     private val teamDao: TeamDao
 ) : PokemonRepository {
+
+    private val nameIndexMutex = Mutex()
+    @Volatile private var nameIndex: List<NamedApiResourceDto>? = null
 
     override suspend fun getPokemonPage(startId: Int, count: Int): List<Pokemon> =
         withContext(Dispatchers.IO) {
@@ -59,6 +66,70 @@ class PokemonRepositoryImpl @Inject constructor(
                 .also { Timber.d("getPokemonPage returning %d entries (start=%d)", it.size, startId) }
         }
 
+    override suspend fun searchPokemon(query: String, dexEnd: Int): List<Pokemon> =
+        withContext(Dispatchers.IO) {
+            val q = query.trim()
+            if (q.isEmpty()) return@withContext emptyList()
+
+            // Numeric query → exact dex-number lookup (cache-first, single entry).
+            q.toIntOrNull()?.let { number ->
+                if (number !in 1..dexEnd) {
+                    Timber.d("searchPokemon number=%d out of range (dexEnd=%d)", number, dexEnd)
+                    return@withContext emptyList()
+                }
+                return@withContext runCatching { getPokemonDetail(number) }
+                    .onFailure { Timber.w(it, "searchPokemon number=%d lookup failed", number) }
+                    .getOrNull()
+                    ?.let { listOf(it) }
+                    .orEmpty()
+            }
+
+            // Name query → substring match against the cached National Dex name index.
+            // Prefix matches rank above looser substring matches; ties break by dex id.
+            val matches = loadNameIndex()
+                .asSequence()
+                .filter { it.id in 1..dexEnd && it.name.contains(q, ignoreCase = true) }
+                .sortedWith(
+                    compareByDescending<NamedApiResourceDto> { it.name.startsWith(q, ignoreCase = true) }
+                        .thenBy { it.id }
+                )
+                .take(SEARCH_RESULT_LIMIT)
+                .toList()
+            Timber.d("searchPokemon name q=%s dexEnd=%d matches=%d", q, dexEnd, matches.size)
+            if (matches.isEmpty()) return@withContext emptyList()
+
+            // Fetch full detail for each match (cache-first), preserving the ranked order.
+            coroutineScope {
+                matches
+                    .map { ref ->
+                        async {
+                            runCatching { getPokemonDetail(ref.id) }
+                                .onFailure { Timber.w(it, "searchPokemon detail id=%d failed", ref.id) }
+                                .getOrNull()
+                        }
+                    }
+                    .awaitAll()
+                    .filterNotNull()
+            }
+        }
+
+    /**
+     * The National Dex name index (`{ name, id }` for every entry), fetched once and held
+     * in memory. The `/pokemon` list endpoint returns entries in dex order, so the first
+     * [Generations.latest] dexEnd results cover every selectable generation. Guarded by a
+     * mutex so concurrent searches don't trigger duplicate fetches.
+     */
+    private suspend fun loadNameIndex(): List<NamedApiResourceDto> {
+        nameIndex?.let { return it }
+        return nameIndexMutex.withLock {
+            nameIndex ?: run {
+                val limit = Generations.latest.dexEnd
+                Timber.d("loadNameIndex fetching %d entries", limit)
+                api.getPokemonList(limit = limit, offset = 0).results.also { nameIndex = it }
+            }
+        }
+    }
+
     override suspend fun getPokemonDetail(id: Int): Pokemon {
         pokemonDao.getById(id)?.let { return it.toDomain() }
         val entity = api.getPokemonDetail(id).toEntity(System.currentTimeMillis())
@@ -82,5 +153,6 @@ class PokemonRepositoryImpl @Inject constructor(
     private companion object {
         const val TEAM_SIZE = 6
         const val DETAIL_FETCH_CHUNK = 12
+        const val SEARCH_RESULT_LIMIT = 20
     }
 }

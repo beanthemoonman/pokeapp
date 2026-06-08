@@ -8,15 +8,16 @@ import io.beanthemoonman.pokeapp.domain.repository.GenerationRepository
 import io.beanthemoonman.pokeapp.domain.repository.PokemonRepository
 import io.beanthemoonman.pokeapp.domain.usecase.GetPokemonPageUseCase
 import io.beanthemoonman.pokeapp.domain.usecase.ObserveSelectedGenerationUseCase
+import io.beanthemoonman.pokeapp.domain.usecase.SearchPokemonUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
@@ -25,6 +26,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PokemonListViewModelTest {
@@ -95,8 +97,10 @@ class PokemonListViewModelTest {
     @Test
     fun `switching generation resets paging and keeps paging`() = runTest(dispatcher) {
         val genRepo = FakeGenerationRepository(selectedId = 1) // Gen I, dexEnd 151
+        val repo = FakeRepository(total = 400)
         val vm = PokemonListViewModel(
-            GetPokemonPageUseCase(FakeRepository(total = 400)),
+            GetPokemonPageUseCase(repo),
+            SearchPokemonUseCase(repo),
             ObserveSelectedGenerationUseCase(genRepo),
         )
         dispatcher.scheduler.advanceUntilIdle()
@@ -120,8 +124,10 @@ class PokemonListViewModelTest {
     @Test
     fun `switching while a page load is in flight does not corrupt paging`() = runTest(dispatcher) {
         val genRepo = FakeGenerationRepository(selectedId = 1)
+        val repo = FakeRepository(total = 400, delayMillis = 100)
         val vm = PokemonListViewModel(
-            GetPokemonPageUseCase(FakeRepository(total = 400, delayMillis = 100)),
+            GetPokemonPageUseCase(repo),
+            SearchPokemonUseCase(repo),
             ObserveSelectedGenerationUseCase(genRepo),
         )
         dispatcher.scheduler.advanceUntilIdle() // first page of Gen I
@@ -145,8 +151,90 @@ class PokemonListViewModelTest {
         assertEquals(GetPokemonPageUseCase.PAGE_SIZE * 2, (vm.state.value as UiState.Success).data.items.size)
     }
 
+    @Test
+    fun `blank query keeps search Idle`() = runTest(dispatcher) {
+        val vm = newViewModel(FakeRepository(total = 151))
+        backgroundScope.launch { vm.searchState.collect {} }
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(vm.searchState.value is SearchUiState.Idle)
+    }
+
+    @Test
+    fun `name query within the dex yields Results`() = runTest(dispatcher) {
+        val vm = newViewModel(FakeRepository(total = 151))
+        backgroundScope.launch { vm.searchState.collect {} }
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.onQueryChange("Pokemon1")
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val s = vm.searchState.value
+        assertTrue(s is SearchUiState.Results)
+        // Every match's name contains the query and is inside Gen I (id <= 151).
+        assertTrue((s as SearchUiState.Results).items.all { it.name.contains("Pokemon1") && it.id <= 151 })
+    }
+
+    @Test
+    fun `dex number outside the generation yields Empty`() = runTest(dispatcher) {
+        // Gen I dexEnd = 151; #200 is out of range even though the repo has 400 entries.
+        val genRepo = FakeGenerationRepository(selectedId = 1)
+        val repo = FakeRepository(total = 400)
+        val vm = PokemonListViewModel(
+            GetPokemonPageUseCase(repo),
+            SearchPokemonUseCase(repo),
+            ObserveSelectedGenerationUseCase(genRepo),
+        )
+        backgroundScope.launch { vm.searchState.collect {} }
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.onQueryChange("200")
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(vm.searchState.value is SearchUiState.Empty)
+    }
+
+    @Test
+    fun `clearing the query returns to Idle`() = runTest(dispatcher) {
+        val vm = newViewModel(FakeRepository(total = 151))
+        backgroundScope.launch { vm.searchState.collect {} }
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.onQueryChange("Pokemon1")
+        dispatcher.scheduler.advanceUntilIdle()
+        assertTrue(vm.searchState.value is SearchUiState.Results)
+
+        vm.clearSearch()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertTrue(vm.searchState.value is SearchUiState.Idle)
+    }
+
+    @Test
+    fun `search failure surfaces Error and retry recovers`() = runTest(dispatcher) {
+        val genRepo = FakeGenerationRepository(selectedId = 1)
+        val repo = FakeRepository(total = 151, searchThrowing = true)
+        val vm = PokemonListViewModel(
+            GetPokemonPageUseCase(repo),
+            SearchPokemonUseCase(repo),
+            ObserveSelectedGenerationUseCase(genRepo),
+        )
+        backgroundScope.launch { vm.searchState.collect {} }
+        dispatcher.scheduler.advanceUntilIdle()
+
+        vm.onQueryChange("Pokemon1")
+        dispatcher.scheduler.advanceUntilIdle()
+        assertTrue(vm.searchState.value is SearchUiState.Error)
+
+        // Stop the repo throwing, then retry the same query — it must re-run.
+        repo.failSearch = false
+        vm.retrySearch()
+        dispatcher.scheduler.advanceUntilIdle()
+        assertTrue(vm.searchState.value is SearchUiState.Results)
+    }
+
     private fun newViewModel(repo: FakeRepository) = PokemonListViewModel(
         GetPokemonPageUseCase(repo),
+        SearchPokemonUseCase(repo),
         ObserveSelectedGenerationUseCase(FakeGenerationRepository(selectedId = 1)),
     )
 
@@ -154,13 +242,28 @@ class PokemonListViewModelTest {
         private val total: Int,
         private val throwing: Boolean = false,
         private val delayMillis: Long = 0,
+        searchThrowing: Boolean = false,
     ) : PokemonRepository {
+        /** Toggleable so a test can fail a search then recover on retry. */
+        var failSearch: Boolean = searchThrowing
         override suspend fun getPokemonPage(startId: Int, count: Int): List<Pokemon> {
-            if (delayMillis > 0) delay(delayMillis)
+            if (delayMillis > 0) delay(delayMillis.milliseconds)
             if (throwing) throw RuntimeException("boom")
             val end = minOf(startId + count - 1, total)
             if (startId > end) return emptyList()
             return (startId..end).map { pokemon(it) }
+        }
+
+        override suspend fun searchPokemon(query: String, dexEnd: Int): List<Pokemon> {
+            if (delayMillis > 0) delay(delayMillis.milliseconds)
+            if (failSearch) throw RuntimeException("search boom")
+            val q = query.trim()
+            if (q.isEmpty()) return emptyList()
+            val limit = minOf(dexEnd, total)
+            q.toIntOrNull()?.let { number ->
+                return if (number in 1..limit) listOf(pokemon(number)) else emptyList()
+            }
+            return (1..limit).map { pokemon(it) }.filter { it.name.contains(q, ignoreCase = true) }
         }
 
         override suspend fun getPokemonDetail(id: Int): Pokemon = pokemon(id)

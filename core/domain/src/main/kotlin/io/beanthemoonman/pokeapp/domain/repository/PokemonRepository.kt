@@ -13,6 +13,14 @@ interface PokemonRepository {
      * Cache-first per entry — cached rows are returned directly, misses are fetched and cached.
      */
     suspend fun getPokemonPage(startId: Int, count: Int): List<Pokemon>
+
+    /**
+     * Searches the National Dex within `1..dexEnd` by name (case-insensitive substring)
+     * or by exact dex number. Returns full [Pokemon] for each match — name-prefix matches
+     * first, then by dex id — capped to a small result set. A blank query yields an empty list.
+     */
+    suspend fun searchPokemon(query: String, dexEnd: Int): List<Pokemon>
+
     suspend fun getPokemonDetail(id: Int): Pokemon
     fun getTeam(): Flow<List<Pokemon?>>
     suspend fun setTeamSlot(slot: Int, pokemonId: Int?)

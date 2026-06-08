@@ -117,3 +117,29 @@ The paging-after-switch bug is still reproducing despite two attempted fixes, so
   - `VersionSelectViewModel.select` and `AppStartViewModel` start-gate transitions.
 - The cancellation-safety fix (rethrow `CancellationException` + `ensureActive`) and the screen keyed-`derivedStateOf` fix remain in place.
 - Verified: `gradlew :core:data:assembleDebug :app-phone:testDebugUnitTest :app-phone:assembleDebug` → BUILD SUCCESSFUL; all tests pass.
+
+### Pokédex List — search bar (wired end to end)
+
+Completed the in-progress search feature. The data/domain/ViewModel scaffolding was already
+present (uncommitted `searchPokemon` on the repository + impl, `SearchPokemonUseCase`, the
+`SearchUiState` sealed interface, and the `query`/`searchState` flows on `PokemonListViewModel`).
+This turn wired the UI and closed a retry gap.
+
+- **`PokemonListScreen`**: replaced the static placeholder `SearchBar` with a real
+  `BasicTextField` (search-icon leading, hint when empty, dexEnd counter when empty, clear `×`
+  button when non-empty; IME action = Search, Fire-colored cursor). `PokemonListContent` now
+  collects `query`/`searchState` and renders by search state: `Idle` shows the paged dex
+  underneath as before; `Loading` reuses the skeleton list; `Results` renders a `LazyColumn` of
+  `ListRow`s; `Empty` and `Error` get dedicated centered states (the latter with a Retry button).
+- **Retry correctness**: re-running a failed search by re-setting the same query string is a
+  no-op (`StateFlow` dedupes equal values), so added a `_searchRetry` counter folded into the
+  search `combine` (now a `Triple`, so `distinctUntilChanged` sees the bump) and a
+  `retrySearch()` the error state calls.
+- **Strings**: added `list_search_clear`, `list_search_empty_title`, `list_search_empty_body`,
+  `list_search_error`.
+- **Tests**: updated `FakeRepository` for the new `searchPokemon` method and the ViewModel's
+  third constructor arg (`SearchPokemonUseCase`); added cases for blank→Idle, name→Results,
+  out-of-generation dex number→Empty, clear→Idle, and failure→Error→retry→Results (toggleable
+  `failSearch` on the fake).
+- Verified: `gradlew :app-phone:compileDebugKotlin` and
+  `gradlew :app-phone:testDebugUnitTest` → BUILD SUCCESSFUL; all tests pass.

@@ -25,3 +25,16 @@ Started in Chat and Design, can assume like $20 of use.
 
  Skills, subagents, plugins, and MCP servers
  No attribution data yet · accumulates as you use Claude
+
+
+This is noteworthy, because this is something that has happened to me over the course of using copilot
+a surprising amount.
+ Now the screen UI. Let me update imports and wire query/searchState through, and make the search bar interactive:
+
+ ● API Error: Output blocked by content filtering policy
+
+ ✻ Churned for 4m 13s
+
+ ❯ Please continue
+
+ ● API Error: Output blocked by content filtering policy
