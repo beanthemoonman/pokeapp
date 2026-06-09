@@ -8,7 +8,10 @@ const {
   PhoneItems, PhoneItemsLoading, PhoneItemsError, ItemDetail,
   PhoneMoves, PhoneMovesLoading, PhoneMovesError, MoveDetail,
   PhoneTeam, PhoneMatchup,
-  TVBrowse, TVDetail, TVTeam,
+  TVBrowse, TVBrowseError, TVDetail,
+  TVItems, TVItemsLoading, TVItemsError, TVItemDetail,
+  TVMoves, TVMovesLoading, TVMovesError, TVMoveDetail,
+  TVTeam, TVMatchup,
 } = window;
 
 // centering wrapper so device bezels float on the canvas grid
@@ -71,10 +74,20 @@ function App() {
         <DCArtboard id="matchup" label="Type Matchup" {...phoneAB}><Center><PhoneMatchup /></Center></DCArtboard>
       </DCSection>
 
-      <DCSection id="tv" title="TV · Leanback" subtitle="androidx.tv · D-pad focus traversal, no bottom nav">
+      <DCSection id="tv" title="TV · Leanback" subtitle="androidx.tv · D-pad focus traversal · left nav rail replaces the phone bottom nav">
         <DCArtboard id="tv-browse" label="Browse Grid" {...tvAB}><Center><TVBrowse /></Center></DCArtboard>
-        <DCArtboard id="tv-detail" label="Detail" {...tvAB}><Center><TVDetail /></Center></DCArtboard>
+        <DCArtboard id="tv-browse-error" label="Browse — error" {...tvAB}><Center><TVBrowseError /></Center></DCArtboard>
+        <DCArtboard id="tv-detail" label="Pokémon Detail" {...tvAB}><Center><TVDetail /></Center></DCArtboard>
+        <DCArtboard id="tv-items" label="Items — loaded" {...tvAB}><Center><TVItems /></Center></DCArtboard>
+        <DCArtboard id="tv-items-loading" label="Items — loading" {...tvAB}><Center><TVItemsLoading /></Center></DCArtboard>
+        <DCArtboard id="tv-items-error" label="Items — error" {...tvAB}><Center><TVItemsError /></Center></DCArtboard>
+        <DCArtboard id="tv-item-detail" label="Item — detail" {...tvAB}><Center><TVItemDetail /></Center></DCArtboard>
+        <DCArtboard id="tv-moves" label="Moves — loaded" {...tvAB}><Center><TVMoves /></Center></DCArtboard>
+        <DCArtboard id="tv-moves-loading" label="Moves — loading" {...tvAB}><Center><TVMovesLoading /></Center></DCArtboard>
+        <DCArtboard id="tv-moves-error" label="Moves — error" {...tvAB}><Center><TVMovesError /></Center></DCArtboard>
+        <DCArtboard id="tv-move-detail" label="Move — detail" {...tvAB}><Center><TVMoveDetail /></Center></DCArtboard>
         <DCArtboard id="tv-team" label="Team Builder" {...tvAB}><Center><TVTeam /></Center></DCArtboard>
+        <DCArtboard id="tv-matchup" label="Type Matchup" {...tvAB}><Center><TVMatchup /></Center></DCArtboard>
       </DCSection>
     </DesignCanvas>
   );

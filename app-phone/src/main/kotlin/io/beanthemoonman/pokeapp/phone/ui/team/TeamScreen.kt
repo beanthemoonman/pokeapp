@@ -25,11 +25,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.beanthemoonman.pokeapp.domain.model.Type
 import io.beanthemoonman.pokeapp.domain.model.UiState
 import io.beanthemoonman.pokeapp.phone.R
 import io.beanthemoonman.pokeapp.ui.common.theme.PokedexColors
-import io.beanthemoonman.pokeapp.domain.model.Type
 import io.beanthemoonman.pokeapp.ui.common.theme.color
+import io.beanthemoonman.pokeapp.uistate.team.TeamViewModel
 
 /**
  * Team Builder route. Owns the [TeamViewModel], collects its [TeamViewModel.state] and

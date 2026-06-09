@@ -1,5 +1,8 @@
 package io.beanthemoonman.pokeapp.phone.ui.typecalc
 
+import io.beanthemoonman.pokeapp.uistate.typecalc.TypeMatchupData
+import io.beanthemoonman.pokeapp.uistate.typecalc.TypeMatchupViewModel
+
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

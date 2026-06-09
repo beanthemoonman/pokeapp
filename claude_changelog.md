@@ -418,3 +418,60 @@ detail fetches; pages then resolve cache-first like Items.
   move/generation repos. 12 tests, all pass.
 - Verified: `gradlew :app-phone:assembleDebug :app-phone:testDebugUnitTest
   :core:data:compileDebugKotlin` → BUILD SUCCESSFUL.
+
+## TV wireframes — parity with the phone (design pass)
+- **wireframes/tv-screens.jsx**: rewrote to bring the TV (leanback) target to feature parity with
+  the phone. Added the missing screens, each drawn in the TV idiom (16:9 `TVFrame`, explicit
+  `.pdx-focused` D-pad ring, footer hint strips):
+  - **Nav rail** (`TVNavRail`): a persistent left icon+label rail (Pokédex · Items · Moves · Team ·
+    Matchup) that replaces the phone bottom nav as the TV's primary navigation. Present on every
+    top-level screen; detail screens stay rail-less with a BACK affordance.
+  - **Items** dictionary: `TVItems` (3-col card grid + category sidebar), `TVItemsLoading`,
+    `TVItemsError`, `TVItemDetail` (split hero + Effect/Description). Gold accent, `itemsForGen`.
+  - **Moves** dictionary: `TVMoves` (wide rows + damage-class sidebar), `TVMovesLoading`,
+    `TVMovesError`, `TVMoveDetail` (split hero + Power/Acc/PP tiles + Effect). Dragon accent,
+    `movesForGen`.
+  - **Type Matchup** (`TVMatchup`): defender hero + defending-type picker on the left, grouped
+    every-attacker results (×4…×0) on the right; uses `groupDefenseGen`.
+  - **Browse error** (`TVBrowseError`) to round out the list states.
+  - Refactored shared sidebar pieces: `TVGenBlock`, `TVFilterSection` (type/category/class),
+    `TVContentHeader`, `TVSearchPill`, `TVHints`, `TVError`. Updated `TVBrowse`/`TVTeam` to sit
+    beside the nav rail.
+- **wireframes/app.jsx**: registered all new TV artboards under the "TV · Leanback" section.
+- **CLAUDE.md**: updated the `tv-screens.jsx` wireframe description to reflect the expanded TV
+  coverage and the nav-rail navigation model.
+- Note: in-progress `app-tv` Kotlin scaffolding (build.gradle/manifest/Hilt app/nav/version-select)
+  was started earlier this session; implementation of the TV Compose screens against these updated
+  wireframes is the next step.
+
+## TV parity build — shared ViewModels + all leanback screens
+
+Brought the Android TV target to full feature parity with the phone, implementing every screen in
+the `tv-screens.jsx` wireframes against real ViewModels.
+
+- **New module `core/ui-state`** (Compose-free android-library, Hilt + lifecycle-viewmodel): lifted
+  all six screen ViewModels and their UiState/data classes out of `app-phone` so phone + TV share one
+  source of truth — `PokemonListViewModel`, `PokemonDetailViewModel`, `TeamViewModel`,
+  `TypeMatchupViewModel`, `ItemsListViewModel`/`ItemDetailViewModel`,
+  `MovesListViewModel`/`MoveDetailViewModel` (+ `SearchUiState`, `*ListData`, `*SearchUiState`,
+  `TeamData`/`TeamPickerUiState`/`PickerResults`, `TypeMatchupData`). Each detail VM now owns its own
+  `ARG_ID` nav-key constant so it no longer depends on the phone `NavDestination`. Registered in
+  `settings.gradle.kts`; added `lifecycle-viewmodel-ktx`/`-savedstate` aliases to the version catalog.
+- **app-phone**: deleted the moved files, added the `:core:ui-state` dependency, and updated screen
+  imports to the shared package. The seven moved ViewModel unit tests now live in
+  `core/ui-state/src/test` and pass.
+- **app-tv shared chrome** (`tv/ui/common/TvChrome.kt`): `TvNavRail` (5-dest left rail),
+  `TvScreenScaffold`, `TvSidebar`/`TvGenBlock`/`TvFilterSection`, `TvContentHeader`, `TvSearchField`
+  (real D-pad text entry), `TvHints`, `TvBackBar`, `TvErrorState`. All D-pad focusable via the
+  existing `tvFocusRing`.
+- **app-tv screens** (consume the shared VMs, all three UiState cases + skeleton loading):
+  - Browse grid + Pokémon detail (split stats panel + Moves/About/Evolution tabs).
+  - Items list + item detail; Moves list + move detail (with TV-local accent/label helpers).
+  - Team builder (slots row, defensive-coverage grid, offensive-gaps panel, search picker overlay).
+  - Type Matchup (defender hero + picker grid + grouped ×4…×0 results).
+- **app-tv nav**: expanded `TvDestination` (Items/ItemDetail/Moves/MoveDetail/Matchup) and rewrote
+  `PokedexTvApp` so the nav rail switches top-level destinations (saveState/restoreState) and detail
+  screens are full-screen-with-back. Added all required `strings.xml` entries. Fixed missing
+  `getValue` import in `TvFocus.kt`.
+- **CLAUDE.md**: documented the new `core/ui-state` module and the shared-ViewModel architecture.
+- Build: `:app-tv:assembleDebug` + `:app-phone:assembleDebug` succeed; `core:ui-state` unit tests pass.

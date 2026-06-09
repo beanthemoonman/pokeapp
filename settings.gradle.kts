@@ -28,4 +28,5 @@ include(":app-tv")
 include(":core:data")
 include(":core:domain")
 include(":core:ui-common")
+include(":core:ui-state")
  

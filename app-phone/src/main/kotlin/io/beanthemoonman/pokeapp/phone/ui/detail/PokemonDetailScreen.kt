@@ -1,5 +1,7 @@
 package io.beanthemoonman.pokeapp.phone.ui.detail
 
+import io.beanthemoonman.pokeapp.uistate.detail.PokemonDetailViewModel
+
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

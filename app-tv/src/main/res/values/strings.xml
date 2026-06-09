@@ -1,4 +1,175 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Pokédex TV</string>
+
+    <!-- Version selector -->
+    <string name="version_eyebrow">Pokédex</string>
+    <string name="version_title">Choose your Pokédex</string>
+    <string name="version_hint_select">◄ ▲ ▼ ► SELECT</string>
+    <string name="version_hint_confirm">● CONFIRM</string>
+
+    <!-- Sidebar -->
+    <string name="sidebar_brand">Pokédex</string>
+    <string name="sidebar_type">Type</string>
+    <string name="sidebar_generation">Generation</string>
+    <string name="sidebar_type_all">All Types</string>
+    <string name="sidebar_dex_range">#1–%1$d</string>
+    <string name="sidebar_menu_change">≡ MENU TO CHANGE</string>
+
+    <!-- Browse grid -->
+    <string name="browse_title">Browse</string>
+    <string name="browse_subtitle">%1$d ENTRIES · NATIONAL THROUGH GEN %2$s</string>
+    <string name="browse_search_hint">Search the Pokédex</string>
+    <string name="browse_search_clear">Clear search</string>
+    <string name="browse_search_empty_title">No matches</string>
+    <string name="browse_search_empty_body">Nothing in this Pokédex matches “%1$s”.</string>
+    <string name="browse_search_error">Couldn\'t search right now. Check your connection and try again.</string>
+    <string name="browse_error_title">Couldn\'t load the Pokédex</string>
+    <string name="browse_error_body">Check your connection and try again. Your saved data is still available offline.</string>
+    <string name="browse_retry">Retry</string>
+    <string name="browse_hint_select">◄ ► SELECT</string>
+    <string name="browse_hint_open">● OPEN</string>
+    <string name="browse_hint_menu">≡ MENU TO FILTER</string>
+    <string name="sprite_cd">%1$s sprite</string>
+    <string name="dex_number">#%03d</string>
+
+    <!-- Detail -->
+    <string name="detail_back">BACK TO BROWSE</string>
+    <string name="detail_stats_title">Base Stats</string>
+    <string name="detail_base_total">Base Total</string>
+    <string name="detail_stat_hp">HP</string>
+    <string name="detail_stat_attack">Attack</string>
+    <string name="detail_stat_defense">Defense</string>
+    <string name="detail_stat_spatk">Sp. Atk</string>
+    <string name="detail_stat_spdef">Sp. Def</string>
+    <string name="detail_stat_speed">Speed</string>
+    <string name="detail_tab_moves">Moves</string>
+    <string name="detail_tab_about">About</string>
+    <string name="detail_tab_evo">Evolution</string>
+    <string name="detail_moves_empty">No level-up moves for this Pokémon.</string>
+    <string name="detail_move_level">Lv. %1$d</string>
+    <string name="detail_move_level_evo">Evo</string>
+    <string name="detail_value_none">—</string>
+    <string name="detail_accuracy">%1$d%%</string>
+    <string name="detail_about_height">Height</string>
+    <string name="detail_about_weight">Weight</string>
+    <string name="detail_about_category">Category</string>
+    <string name="detail_about_abilities">Abilities</string>
+    <string name="detail_height_value">%1$s m</string>
+    <string name="detail_weight_value">%1$s kg</string>
+    <string name="detail_catch_rate">Catch Rate</string>
+    <string name="detail_catch_rate_value">%1$d / 255</string>
+    <string name="detail_evo_none">%1$s does not evolve.</string>
+    <string name="detail_error_title">Couldn\'t load this Pokémon</string>
+    <string name="detail_error_body">Check your connection and try again.</string>
+    <string name="detail_retry">Retry</string>
+    <string name="detail_hint_stats">◄ STATS PANEL</string>
+    <string name="detail_hint_tabs">► TABS</string>
+    <string name="detail_hint_rows">▲▼ ROWS</string>
+
+    <!-- Team Builder -->
+    <string name="team_title">Team Builder</string>
+    <string name="team_count">%1$d / 6 SLOTS FILLED</string>
+    <string name="team_weaknesses">⚠ %1$d SHARED WEAKNESSES</string>
+    <string name="team_slot_empty">Empty</string>
+    <string name="team_slot_remove">Remove from team</string>
+    <string name="team_coverage_defensive">Defensive Coverage — all %1$d types</string>
+    <string name="team_coverage_legend_shared">Shared weakness (× members)</string>
+    <string name="team_coverage_legend_covered">Resisted / covered</string>
+    <string name="team_offensive_gaps">Offensive Gaps</string>
+    <string name="team_offensive_body">Your team has no move that hits these types super-effectively. Consider adding an attacker to close the gap.</string>
+    <string name="team_offensive_none">Every type is covered by your team\'s attacks.</string>
+    <string name="team_coverage_empty">Add a Pokémon to see your team\'s type coverage.</string>
+    <string name="team_hint_add">● ADD TO EMPTY SLOT</string>
+    <string name="team_picker_title_add">Add to slot %1$d</string>
+    <string name="team_picker_title_replace">Replace slot %1$d</string>
+    <string name="team_picker_hint">Search name or №</string>
+    <string name="team_picker_prompt">Search to add a Pokémon to your team.</string>
+    <string name="team_picker_empty">Nothing matches “%1$s”.</string>
+    <string name="team_picker_error">Couldn\'t search right now. Try again.</string>
+    <string name="team_picker_remove">Remove from team</string>
+    <string name="team_picker_close">Close</string>
+
+    <!-- Nav rail -->
+    <string name="nav_dex">Pokédex</string>
+    <string name="nav_items">Items</string>
+    <string name="nav_moves">Moves</string>
+    <string name="nav_team">Team</string>
+    <string name="nav_matchup">Matchup</string>
+
+    <!-- Items dictionary -->
+    <string name="items_title">Items</string>
+    <string name="items_subtitle">%1$d ITEMS · DICTIONARY THROUGH GEN %2$s</string>
+    <string name="items_search_hint">Search items</string>
+    <string name="items_category">Category</string>
+    <string name="items_category_all">All Items</string>
+    <string name="items_cost">₽%1$s</string>
+    <string name="items_cost_none">—</string>
+    <string name="items_buy">Buy</string>
+    <string name="items_effect">Effect</string>
+    <string name="items_description">Description</string>
+    <string name="items_error_title">Couldn\'t load items</string>
+    <string name="items_error_body">Check your connection and try again. Your saved data is still available offline.</string>
+    <string name="items_back">BACK TO ITEMS</string>
+    <string name="items_hint_select">◄ ▲ ▼ ► SELECT</string>
+    <string name="items_hint_open">● OPEN</string>
+    <string name="items_hint_menu">≡ MENU TO FILTER</string>
+    <string name="item_cat_balls">Poké Balls</string>
+    <string name="item_cat_healing">Healing</string>
+    <string name="item_cat_medicine">Medicine</string>
+    <string name="item_cat_evolution">Evolution</string>
+    <string name="item_cat_held">Held Items</string>
+    <string name="item_cat_mega">Mega Stones</string>
+    <string name="item_cat_key">Key Items</string>
+    <string name="item_cat_other">Other</string>
+
+    <!-- Moves dictionary -->
+    <string name="moves_title">Moves</string>
+    <string name="moves_subtitle">%1$d MOVES · DICTIONARY THROUGH GEN %2$s</string>
+    <string name="moves_search_hint">Search moves</string>
+    <string name="moves_class">Damage Class</string>
+    <string name="moves_class_all">All</string>
+    <string name="move_class_physical">Physical</string>
+    <string name="move_class_special">Special</string>
+    <string name="move_class_status">Status</string>
+    <string name="moves_value_none">—</string>
+    <string name="moves_acc_value">%1$d%%</string>
+    <string name="moves_pp_value">%1$dpp</string>
+    <string name="moves_effect">Effect</string>
+    <string name="moves_stat_power">Power</string>
+    <string name="moves_stat_acc">Acc</string>
+    <string name="moves_stat_pp">PP</string>
+    <string name="moves_error_title">Couldn\'t load moves</string>
+    <string name="moves_error_body">Check your connection and try again. Your saved data is still available offline.</string>
+    <string name="moves_back">BACK TO MOVES</string>
+    <string name="moves_hint_rows">▲▼ ROWS</string>
+    <string name="moves_hint_open">● OPEN</string>
+    <string name="moves_hint_menu">≡ MENU TO FILTER</string>
+
+    <!-- Type Matchup -->
+    <string name="matchup_title">Type Matchup</string>
+    <string name="matchup_subtitle">DEFENDING · %1$d ATTACKERS · GEN %2$s</string>
+    <string name="matchup_sidebar_title">Matchup</string>
+    <string name="matchup_sidebar_body">Pick one or two defending types. The grid shows what every attacking type does to that combo.</string>
+    <string name="matchup_defenders_label">Defending types</string>
+    <string name="matchup_choose">Choose defending types (up to 2)</string>
+    <string name="matchup_clear">Clear</string>
+    <string name="matchup_prompt">Pick a defending type to see the matchup.</string>
+    <string name="matchup_every_attacker">Every attacker · vs %1$s</string>
+    <string name="matchup_group_quad">Double Weak</string>
+    <string name="matchup_group_double">Weak</string>
+    <string name="matchup_group_neutral">Neutral</string>
+    <string name="matchup_group_half">Resists</string>
+    <string name="matchup_group_quarter">Double Resists</string>
+    <string name="matchup_group_immune">Immune</string>
+    <string name="matchup_mult_quad">×4</string>
+    <string name="matchup_mult_double">×2</string>
+    <string name="matchup_mult_neutral">×1</string>
+    <string name="matchup_mult_half">×½</string>
+    <string name="matchup_mult_quarter">×¼</string>
+    <string name="matchup_mult_immune">×0</string>
+    <string name="matchup_group_none">None</string>
+    <string name="matchup_hint_pick">◄ ▲ ▼ ► PICK TYPE</string>
+    <string name="matchup_hint_toggle">● TOGGLE</string>
+    <string name="matchup_hint_scroll">▲▼ SCROLL RESULTS</string>
 </resources>

@@ -108,3 +108,50 @@ so probably double below,
 
  Skills, subagents, plugins, and MCP servers
  No attribution data yet · accumulates as you use Claude
+
+Later that night, good lord,
+ Done. The TV target is now at full feature parity with the phone, built against real ViewModels.
+
+ What I built
+
+ Phase 0 — Shared module (core/ui-state)
+ - New Compose-free android-library holding all six screen ViewModels + their UiState/data classes, lifted out of app-phone so both targets share one source of truth.
+ - Each detail VM now owns its own ARG_ID nav-key constant (no more dependency on the phone's NavDestination).
+ - Registered in settings.gradle.kts; added lifecycle-viewmodel-ktx/-savedstate catalog aliases. Phone rewired to consume it; the 7 moved ViewModel tests now live in core/ui-state/src/test and pass.
+
+ Phases 1–7 — TV chrome + screens (app-tv)
+ - Chrome (TvChrome.kt): nav rail (Pokédex · Items · Moves · Team · Matchup), screen scaffold, collapsible filter sidebar + generation block, content header, real D-pad search field, hints, back bar, error state — all D-pad focusable.
+ - Screens, all with Loading (skeletons) / Success / Error: Browse grid, Pokémon detail (split stats + Moves/About/Evolution tabs), Items list + detail, Moves list + detail, Team builder (slots + coverage grid + offensive gaps + search picker overlay), Type Matchup (defender picker + grouped ×4…×0 results).
+
+ Phase 8 — Wire-up
+ - Expanded TvDestination, rewrote PokedexTvApp so the rail drives top-level destinations (saveState/restoreState) with full-screen detail+back; added all strings.xml; fixed a latent missing import in TvFocus.kt.
+
+ Verification: :app-tv:assembleDebug and :app-phone:assembleDebug both succeed (Hilt codegen and resources included); shared ViewModel unit tests pass. CLAUDE.md and claude_changelog.md updated per the project guide.
+
+ Two honest caveats against the Definition of Done:
+ - D-pad traversal is implemented (every element focusable with a visible focus ring) but verifying every up/down/left/right/back path is a runtime check — worth a pass on a TV emulator.
+ - No TeamViewModel unit test was added (none existed before the lift); the other five screens' VM tests carried over.
+
+ The one notable debugging detour: app-tv was missing its :core:ui-state dependency, which a stale build cache masked until a clean — now fixed.
+
+ Bada Bing!
+   Total cost:            $39.61
+ Total duration (API):  1h 20m 58s
+ Total duration (wall): 5h 36m 12s
+ Total code changes:    10217 lines added, 221 lines removed
+ Usage by model:
+     claude-haiku-4-5:  35.1k input, 691 output, 0 cache read, 0 cache write ($0.0385)
+      claude-opus-4-8:  29.9k input, 401.0k output, 42.4m cache read, 1.3m cache write ($39.57)
+
+ Current session
+ ████████████████████████████████████████████████   96% used
+ Resets 3:10am (America/New_York)
+                                                                                                                                                                                                                                What's contributing to your limits usage?
+ Approximate, based on local sessions on this machine — does not include other devices or claude.ai
+ Last 24h · these are independent characteristics of your usage, not a breakdown
+
+ 35% of your usage was at >150k context
+  Longer sessions are more expensive even when cached. /compact mid-task, /clear when switching to new tasks.
+
+ Skills, subagents, plugins, and MCP servers
+ No attribution data yet · accumulates as you use Claude

@@ -33,7 +33,10 @@ Wireframe files (flat `.jsx`/`.js` sources from Claude Design, plus a rendered `
 - `wireframes/version-select.jsx` — ROOT generation selector (phone list + loading, TV grid). Shown first.
 - `wireframes/phone-list.jsx`, `wireframes/phone-detail.jsx`, `wireframes/phone-tools.jsx` — phone screens
 - `wireframes/phone-items.jsx`, `wireframes/phone-moves.jsx` — Items & Moves dictionary screens (list/loading/error + detail). Moves scope strictly by introduction generation; items are best-effort (PokéAPI lacks a reliable introduced-in-gen list). Phone bottom nav is Pokédex · Items · Moves · Team · Matchup (no "Saved").
-- `wireframes/tv-screens.jsx` — TV screens
+- `wireframes/tv-screens.jsx` — TV (leanback) screens at parity with the phone: Browse (+error),
+  Pokémon Detail, Items (list/loading/error + detail), Moves (list/loading/error + detail), Team,
+  Type Matchup. The phone bottom nav is replaced on TV by a persistent left **nav rail** (Pokédex ·
+  Items · Moves · Team · Matchup); per-screen filter sidebars sit to its right (collapsible).
 - `wireframes/components.jsx` — shared component specs (TypeBadge, StatBar, Sprite, nav chrome, GenerationCard, VersionChip)
 - `wireframes/foundations.jsx` — design-system reference (surface tokens, typography, type palette)
 - `wireframes/data.js` — type color tokens, stat metadata, per-generation type-effectiveness charts, GENERATIONS, sample data
@@ -60,12 +63,16 @@ pokedex/
 └── core/
     ├── data/                           # API, Room DB, repositories
     ├── domain/                         # Use cases, domain models, type matrix
-    └── ui-common/                      # Shared Compose components, theme
+    ├── ui-common/                      # Shared Compose components, theme
+    └── ui-state/                       # Shared screen ViewModels + UiState (phone + TV)
 ```
 
 When adding new functionality, determine which module it belongs to before writing any code.
 Business logic lives in `core/domain`. Network/persistence lives in `core/data`. Shared Compose
-components live in `core/ui-common`. Screen-level composables live in the appropriate app module.
+components live in `core/ui-common`. Screen-level ViewModels and their UiState/data classes are
+shared by both targets and live in `core/ui-state` (Compose-free; each detail VM owns its `ARG_ID`
+nav-key constant so both nav graphs can wire it). Screen-level composables live in the appropriate
+app module.
 
 ---
 
