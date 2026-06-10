@@ -56,7 +56,7 @@ import io.beanthemoonman.pokeapp.uistate.list.PokemonListData
 import io.beanthemoonman.pokeapp.uistate.list.PokemonListViewModel
 import io.beanthemoonman.pokeapp.uistate.list.SearchUiState
 
-private const val GRID_COLUMNS = 6
+private const val GRID_COLUMNS = 3
 
 /** TV Browse grid — at parity with the phone Pokédex list (see tv-screens.jsx `TVBrowse`). */
 @Composable

@@ -87,7 +87,7 @@ private fun PokedexTvNavHost(startAtSelector: Boolean) {
             TvTeamScreen(onNavigate = onNavigate)
         }
         composable(TvDestination.Matchup.route) {
-            TvMatchupScreen(onNavigate = onNavigate, onSwitchGeneration = onSwitchGeneration)
+            TvMatchupScreen(onNavigate = onNavigate)
         }
         composable(
             route = TvDestination.Detail.route,

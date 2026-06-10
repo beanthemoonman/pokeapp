@@ -184,7 +184,7 @@ private fun FilledSlot(
     }
 }
 
-private const val COLUMNS = 2
+private const val COLUMNS = 3
 private val SLOT_GAP = 10.dp
 
 @Preview(widthDp = 360, backgroundColor = 0xFF0C0D11, showBackground = true)

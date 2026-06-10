@@ -475,3 +475,34 @@ the `tv-screens.jsx` wireframes against real ViewModels.
   `getValue` import in `TvFocus.kt`.
 - **CLAUDE.md**: documented the new `core/ui-state` module and the shared-ViewModel architecture.
 - Build: `:app-tv:assembleDebug` + `:app-phone:assembleDebug` succeed; `core:ui-state` unit tests pass.
+
+## Team Builder slot grid — sprites too small (2026-06-09)
+- **Bug**: Team Builder slots rendered in a 2-column grid, making each square slot oversized so the
+  fixed 48dp sprite looked tiny and didn't fill the box.
+- **Fix**: `TeamSlotGrid.kt` `COLUMNS` changed 2 → 3 to match `wireframes/phone-tools.jsx`
+  (`gridTemplateColumns: 'repeat(3, 1fr)'`).
+
+## TV Team Builder — picker dialog didn't grab focus (2026-06-09)
+- **Bug**: Opening the "Add to slot" picker overlay on TV left D-pad focus on the slot grid behind
+  the dialog, so the search field couldn't be reached.
+- **Fix**: `TvTeamScreen.PickerOverlay` now holds a `FocusRequester` attached to `TvSearchField`
+  and calls `requestFocus()` in a `LaunchedEffect(open.slot)` when the overlay opens.
+
+## TV Type Matchup — removed left sidebar (2026-06-09)
+- **Request**: the left sidebar (explanation paragraph + generation block) made the screen margins
+  awkward.
+- **Change**: `TvMatchupScreen` no longer renders a `TvSidebar`; the content now spans the full
+  width under the nav rail. Dropped the unused `onSwitchGeneration` param and its call-site wiring
+  in `PokedexTvApp` (generation is still switchable from the other screens). Removed now-unused
+  `TvSidebar`/`TvGenBlock` imports. The `matchup_sidebar_title`/`matchup_sidebar_body` strings are
+  now unused but left in place.
+
+## TV Type Matchup — bottom result groups unreachable/cut off (2026-06-09)
+- **Bug**: the grouped results column overflowed the viewport (e.g. "Double Resists" cut off) and
+  couldn't be scrolled: the outer `Row` used `fillMaxSize()` (pushing the hint bar off-screen) and
+  nothing inside the `verticalScroll` results column was focusable, so the D-pad couldn't drive the
+  scroll.
+- **Fix** (`TvMatchupScreen`): wrapped the body in a `Column(fillMaxSize)` and gave the content
+  `Row` `weight(1f)` so it's bounded and the hint bar stays visible. Each `DefenseBucket` group is
+  now `focusable` with a `tvFocusRing`, so D-pad navigation moves group-to-group and `verticalScroll`
+  brings the focused group into view — the last bucket is now reachable.

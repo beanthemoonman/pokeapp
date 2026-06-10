@@ -28,11 +28,14 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -243,6 +246,8 @@ private fun PickerOverlay(
     onRemove: () -> Unit,
     onClose: () -> Unit,
 ) {
+    val searchFocus = remember { FocusRequester() }
+    LaunchedEffect(open.slot) { searchFocus.requestFocus() }
     Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.6f)).clickable(onClick = onClose), contentAlignment = Alignment.Center) {
         Column(
             modifier = Modifier
@@ -259,7 +264,7 @@ private fun PickerOverlay(
                 color = PokedexColors.TextPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold,
             )
             Spacer(Modifier.height(16.dp))
-            TvSearchField(value = open.query, onValueChange = onQueryChange, onClear = { onQueryChange("") }, hint = stringResource(R.string.team_picker_hint), accent = TeamAccent, modifier = Modifier.fillMaxWidth())
+            TvSearchField(value = open.query, onValueChange = onQueryChange, onClear = { onQueryChange("") }, hint = stringResource(R.string.team_picker_hint), accent = TeamAccent, modifier = Modifier.fillMaxWidth().focusRequester(searchFocus))
             Spacer(Modifier.height(18.dp))
             Box(Modifier.weight(1f).fillMaxWidth()) {
                 when (val r = open.results) {

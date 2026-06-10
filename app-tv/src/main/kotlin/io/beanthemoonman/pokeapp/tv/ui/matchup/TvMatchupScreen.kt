@@ -45,12 +45,10 @@ import io.beanthemoonman.pokeapp.domain.model.Type
 import io.beanthemoonman.pokeapp.domain.model.UiState
 import io.beanthemoonman.pokeapp.domain.type.DefenseBucket
 import io.beanthemoonman.pokeapp.tv.R
-import io.beanthemoonman.pokeapp.tv.ui.common.TvGenBlock
 import io.beanthemoonman.pokeapp.tv.ui.common.TvHints
 import io.beanthemoonman.pokeapp.tv.ui.common.TvNavItem
 import io.beanthemoonman.pokeapp.tv.ui.common.TvScreenScaffold
 import io.beanthemoonman.pokeapp.tv.ui.common.TvSectionLabel
-import io.beanthemoonman.pokeapp.tv.ui.common.TvSidebar
 import io.beanthemoonman.pokeapp.tv.ui.common.tvFocusRing
 import io.beanthemoonman.pokeapp.ui.common.component.TypeBadge
 import io.beanthemoonman.pokeapp.ui.common.component.TypeBadgeSize
@@ -63,7 +61,6 @@ import io.beanthemoonman.pokeapp.uistate.typecalc.TypeMatchupViewModel
 @Composable
 fun TvMatchupScreen(
     onNavigate: (TvNavItem) -> Unit,
-    onSwitchGeneration: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TypeMatchupViewModel = hiltViewModel(),
 ) {
@@ -74,45 +71,37 @@ fun TvMatchupScreen(
         active = TvNavItem.MATCHUP,
         onNavigate = onNavigate,
         modifier = modifier,
-        sidebar = {
-            TvSidebar {
-                Column {
-                    TvSectionLabel(stringResource(R.string.matchup_sidebar_title))
-                    Spacer(Modifier.height(12.dp))
-                    Text(stringResource(R.string.matchup_sidebar_body), color = PokedexColors.TextDim, fontSize = 12.5.sp, lineHeight = 20.sp)
-                }
-                data?.let { TvGenBlock(it.generation, onSwitchGeneration) }
-            }
-        },
     ) {
         if (data == null) {
             Box(Modifier.fillMaxSize())
             return@TvScreenScaffold
         }
-        Column {
-            Text(stringResource(R.string.matchup_title), color = PokedexColors.TextPrimary, fontSize = 30.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.6).sp)
-            Text(
-                text = stringResource(R.string.matchup_subtitle, data.roster.size, data.generation.label),
-                color = PokedexColors.TextFaint, fontSize = 12.5.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(top = 4.dp),
-            )
-        }
-        Spacer(Modifier.height(18.dp))
-        Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(26.dp)) {
-            // Left — defender hero + picker
-            Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                DefenderHero(data.defenders)
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    TvSectionLabel(stringResource(R.string.matchup_choose))
-                    if (data.defending) {
-                        Text(stringResource(R.string.matchup_clear), color = PokedexColors.TextDim, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.clickable(onClick = viewModel::clearDefenders).padding(4.dp))
-                    }
-                }
-                TypePickerGrid(roster = data.roster, selected = data.defenders, onToggle = viewModel::toggleDefender)
+        Column(Modifier.fillMaxSize()) {
+            Column {
+                Text(stringResource(R.string.matchup_title), color = PokedexColors.TextPrimary, fontSize = 30.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.6).sp)
+                Text(
+                    text = stringResource(R.string.matchup_subtitle, data.roster.size, data.generation.label),
+                    color = PokedexColors.TextFaint, fontSize = 12.5.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(top = 4.dp),
+                )
             }
-            // Right — grouped results
-            ResultsColumn(data, Modifier.weight(1.35f).fillMaxHeight())
+            Spacer(Modifier.height(18.dp))
+            Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(26.dp)) {
+                // Left — defender hero + picker
+                Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+                    DefenderHero(data.defenders)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        TvSectionLabel(stringResource(R.string.matchup_choose))
+                        if (data.defending) {
+                            Text(stringResource(R.string.matchup_clear), color = PokedexColors.TextDim, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.clickable(onClick = viewModel::clearDefenders).padding(4.dp))
+                        }
+                    }
+                    TypePickerGrid(roster = data.roster, selected = data.defenders, onToggle = viewModel::toggleDefender)
+                }
+                // Right — grouped results
+                ResultsColumn(data, Modifier.weight(1.35f).fillMaxHeight())
+            }
+            TvHints(listOf(stringResource(R.string.matchup_hint_pick), stringResource(R.string.matchup_hint_toggle), stringResource(R.string.matchup_hint_scroll)))
         }
-        TvHints(listOf(stringResource(R.string.matchup_hint_pick), stringResource(R.string.matchup_hint_toggle), stringResource(R.string.matchup_hint_scroll)))
     }
 }
 
@@ -186,7 +175,16 @@ private fun ResultsColumn(data: TypeMatchupData, modifier: Modifier = Modifier) 
         DefenseBucket.entries.forEach { bucket ->
             val members = data.defenseGroups[bucket].orEmpty()
             val meta = bucket.meta()
-            Column {
+            val interaction = remember { MutableInteractionSource() }
+            val focused by interaction.collectIsFocusedAsState()
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .tvFocusRing(focused = focused, accent = meta.color, cornerRadius = 10.dp)
+                    .focusable(interactionSource = interaction)
+                    .padding(6.dp),
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 9.dp)) {
                     Box(Modifier.size(width = 4.dp, height = 14.dp).clip(RoundedCornerShape(2.dp)).background(meta.color))
                     Text(stringResource(meta.titleRes), color = PokedexColors.TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)

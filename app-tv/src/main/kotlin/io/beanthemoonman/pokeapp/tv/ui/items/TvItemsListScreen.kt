@@ -58,7 +58,7 @@ import io.beanthemoonman.pokeapp.uistate.items.ItemsListData
 import io.beanthemoonman.pokeapp.uistate.items.ItemsListViewModel
 import io.beanthemoonman.pokeapp.uistate.items.ItemsSearchUiState
 
-private const val ITEM_COLUMNS = 3
+private const val ITEM_COLUMNS = 2
 private const val ALL = "all"
 
 /** TV Items dictionary — at parity with the phone Items list (tv-screens.jsx `TVItems`). */
