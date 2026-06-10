@@ -506,3 +506,10 @@ the `tv-screens.jsx` wireframes against real ViewModels.
   `Row` `weight(1f)` so it's bounded and the hint bar stays visible. Each `DefenseBucket` group is
   now `focusable` with a `tvFocusRing`, so D-pad navigation moves group-to-group and `verticalScroll`
   brings the focused group into view — the last bucket is now reachable.
+
+## 2026-06-09
+
+### Wireframe canvas refactor (app.jsx)
+- Moved **Foundations** (design system / shared tokens & components) to the top of the design canvas, above all screens.
+- Reorganized the canvas so each **view** pairs its Phone and TV artboards in the same section row, instead of grouping all phone screens first and a single "TV · Leanback" section last. New sections: Foundations · Root Version Select · Pokédex List/Browse · Pokémon Detail · Items Dictionary · Moves Dictionary · Team & Matchup — each containing both targets' states side by side. Artboard labels prefixed with "Phone —" / "TV —" for clarity.
+- No component sources changed; this is purely the `app.jsx` assembly. No `.design-canvas.state.json` sidecar exists, so no persisted order/label state needed migration.
