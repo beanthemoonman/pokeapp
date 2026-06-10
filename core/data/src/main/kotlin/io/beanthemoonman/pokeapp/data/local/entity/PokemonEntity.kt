@@ -10,13 +10,13 @@ import io.beanthemoonman.pokeapp.domain.model.Type
  */
 @Entity(tableName = "pokemon")
 data class PokemonEntity(
-    @PrimaryKey val id: Int,
-    val name: String,
-    val spriteUrl: String,
-    val types: List<Type>,
-    /** Base stats in fixed order: hp, attack, defense, specialAttack, specialDefense, speed. */
-    val stats: List<Int>,
-    val height: Int,
-    val weight: Int,
-    val cachedAt: Long
+  @PrimaryKey val id: Int,
+  val name: String,
+  val spriteUrl: String,
+  val types: List<Type>,
+  /** Base stats in fixed order: hp, attack, defense, specialAttack, specialDefense, speed. */
+  val stats: List<Int>,
+  val height: Int,
+  val weight: Int,
+  val cachedAt: Long
 )

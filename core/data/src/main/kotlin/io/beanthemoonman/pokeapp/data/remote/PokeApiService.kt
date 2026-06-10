@@ -1,5 +1,6 @@
 package io.beanthemoonman.pokeapp.data.remote
 
+import io.beanthemoonman.pokeapp.data.remote.dto.AbilityDetailDto
 import io.beanthemoonman.pokeapp.data.remote.dto.EvolutionChainDto
 import io.beanthemoonman.pokeapp.data.remote.dto.GenerationDto
 import io.beanthemoonman.pokeapp.data.remote.dto.ItemDetailDto
@@ -16,40 +17,43 @@ import retrofit2.http.Query
 /** Retrofit binding for PokéAPI v2 (https://pokeapi.co/api/v2/). No auth required. */
 interface PokeApiService {
 
-    @GET("pokemon")
-    suspend fun getPokemonList(
-        @Query("limit") limit: Int,
-        @Query("offset") offset: Int
-    ): PokemonListResponseDto
+  @GET("pokemon")
+  suspend fun getPokemonList(
+    @Query("limit") limit: Int,
+    @Query("offset") offset: Int
+  ): PokemonListResponseDto
 
-    @GET("pokemon/{id}")
-    suspend fun getPokemonDetail(@Path("id") id: Int): PokemonDetailDto
+  @GET("pokemon/{id}")
+  suspend fun getPokemonDetail(@Path("id") id: Int): PokemonDetailDto
 
-    @GET("pokemon-species/{id}")
-    suspend fun getPokemonSpecies(@Path("id") id: Int): PokemonSpeciesDto
+  @GET("pokemon-species/{id}")
+  suspend fun getPokemonSpecies(@Path("id") id: Int): PokemonSpeciesDto
 
-    @GET("evolution-chain/{id}")
-    suspend fun getEvolutionChain(@Path("id") id: Int): EvolutionChainDto
+  @GET("evolution-chain/{id}")
+  suspend fun getEvolutionChain(@Path("id") id: Int): EvolutionChainDto
 
-    @GET("move/{name}")
-    suspend fun getMove(@Path("name") name: String): MoveDto
+  @GET("move/{name}")
+  suspend fun getMove(@Path("name") name: String): MoveDto
 
-    @GET("move/{id}")
-    suspend fun getMoveDetail(@Path("id") id: Int): MoveDetailDto
+  @GET("ability/{name}")
+  suspend fun getAbility(@Path("name") name: String): AbilityDetailDto
 
-    @GET("generation/{id}")
-    suspend fun getGeneration(@Path("id") id: Int): GenerationDto
+  @GET("move/{id}")
+  suspend fun getMoveDetail(@Path("id") id: Int): MoveDetailDto
 
-    @GET("item")
-    suspend fun getItemList(
-        @Query("limit") limit: Int,
-        @Query("offset") offset: Int
-    ): ItemListResponseDto
+  @GET("generation/{id}")
+  suspend fun getGeneration(@Path("id") id: Int): GenerationDto
 
-    @GET("item/{id}")
-    suspend fun getItem(@Path("id") id: Int): ItemDetailDto
+  @GET("item")
+  suspend fun getItemList(
+    @Query("limit") limit: Int,
+    @Query("offset") offset: Int
+  ): ItemListResponseDto
 
-    companion object {
-        const val BASE_URL = "https://pokeapi.co/api/v2/"
-    }
+  @GET("item/{id}")
+  suspend fun getItem(@Path("id") id: Int): ItemDetailDto
+
+  companion object {
+    const val BASE_URL = "https://pokeapi.co/api/v2/"
+  }
 }

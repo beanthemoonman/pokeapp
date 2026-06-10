@@ -7,6 +7,6 @@ import kotlinx.coroutines.flow.Flow
  * A null id means no generation has been selected yet (first launch).
  */
 interface GenerationRepository {
-    val selectedGenerationId: Flow<Int?>
-    suspend fun selectGeneration(id: Int)
+  val selectedGenerationId: Flow<Int?>
+  suspend fun selectGeneration(id: Int)
 }

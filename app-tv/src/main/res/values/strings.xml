@@ -55,11 +55,14 @@
     <string name="detail_about_weight">Weight</string>
     <string name="detail_about_category">Category</string>
     <string name="detail_about_abilities">Abilities</string>
+    <string name="detail_ability_hidden">Hidden</string>
+    <string name="detail_ability_no_effect">No effect description available.</string>
     <string name="detail_height_value">%1$s m</string>
     <string name="detail_weight_value">%1$s kg</string>
     <string name="detail_catch_rate">Catch Rate</string>
     <string name="detail_catch_rate_value">%1$d / 255</string>
     <string name="detail_evo_none">%1$s does not evolve.</string>
+    <string name="detail_evo_mega_title">Mega Evolution</string>
     <string name="detail_error_title">Couldn\'t load this Pokémon</string>
     <string name="detail_error_body">Check your connection and try again.</string>
     <string name="detail_retry">Retry</string>

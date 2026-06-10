@@ -12,9 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 
 /**
@@ -23,32 +23,32 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun SkeletonBox(
-    modifier: Modifier = Modifier,
-    cornerRadius: androidx.compose.ui.unit.Dp = 8.dp,
+  modifier: Modifier = Modifier,
+  cornerRadius: androidx.compose.ui.unit.Dp = 8.dp,
 ) {
-    val transition = rememberInfiniteTransition(label = "skeleton")
-    val translate by transition.animateFloat(
-        initialValue = -2f,
-        targetValue = 2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1400),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "skeleton-translate",
-    )
+  val transition = rememberInfiniteTransition(label = "skeleton")
+  val translate by transition.animateFloat(
+    initialValue = -2f,
+    targetValue = 2f,
+    animationSpec = infiniteRepeatable(
+      animation = tween(durationMillis = 1400),
+      repeatMode = RepeatMode.Restart,
+    ),
+    label = "skeleton-translate",
+  )
 
-    val base = Color.White.copy(alpha = 0.04f)
-    val highlight = Color.White.copy(alpha = 0.09f)
-    val shift = translate * 400f
-    val brush = Brush.linearGradient(
-        colors = listOf(base, highlight, base),
-        start = Offset(shift, 0f),
-        end = Offset(shift + 400f, 0f),
-    )
+  val base = Color.White.copy(alpha = 0.04f)
+  val highlight = Color.White.copy(alpha = 0.09f)
+  val shift = translate * 400f
+  val brush = Brush.linearGradient(
+    colors = listOf(base, highlight, base),
+    start = Offset(shift, 0f),
+    end = Offset(shift + 400f, 0f),
+  )
 
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(cornerRadius))
-            .background(brush)
-    )
+  Box(
+    modifier = modifier
+      .clip(RoundedCornerShape(cornerRadius))
+      .background(brush)
+  )
 }

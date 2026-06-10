@@ -17,41 +17,41 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ItemDetailViewModel @Inject constructor(
-    private val getItemDetail: GetItemDetailUseCase,
-    savedStateHandle: SavedStateHandle,
+  private val getItemDetail: GetItemDetailUseCase,
+  savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val itemId: Int = savedStateHandle.get<Int>(ARG_ID) ?: 0
+  private val itemId: Int = savedStateHandle.get<Int>(ARG_ID) ?: 0
 
-    private val _state = MutableStateFlow<UiState<Item>>(UiState.Loading)
-    val state: StateFlow<UiState<Item>> = _state.asStateFlow()
+  private val _state = MutableStateFlow<UiState<Item>>(UiState.Loading)
+  val state: StateFlow<UiState<Item>> = _state.asStateFlow()
 
-    init {
-        load()
+  init {
+    load()
+  }
+
+  fun retry() {
+    Timber.i("item detail retry id=%d", itemId)
+    load()
+  }
+
+  private fun load() {
+    _state.value = UiState.Loading
+    viewModelScope.launch {
+      try {
+        Timber.d("item detail loading id=%d", itemId)
+        _state.value = UiState.Success(getItemDetail(itemId))
+      } catch (e: CancellationException) {
+        throw e
+      } catch (e: Exception) {
+        Timber.e(e, "item detail load failed id=%d", itemId)
+        _state.value = UiState.Error(e.message ?: "Something went wrong")
+      }
     }
+  }
 
-    fun retry() {
-        Timber.i("item detail retry id=%d", itemId)
-        load()
-    }
-
-    private fun load() {
-        _state.value = UiState.Loading
-        viewModelScope.launch {
-            try {
-                Timber.d("item detail loading id=%d", itemId)
-                _state.value = UiState.Success(getItemDetail(itemId))
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                Timber.e(e, "item detail load failed id=%d", itemId)
-                _state.value = UiState.Error(e.message ?: "Something went wrong")
-            }
-        }
-    }
-
-    companion object {
-        /** Nav argument key for the item id; shared by both app targets. */
-        const val ARG_ID = "id"
-    }
+  companion object {
+    /** Nav argument key for the item id; shared by both app targets. */
+    const val ARG_ID = "id"
+  }
 }

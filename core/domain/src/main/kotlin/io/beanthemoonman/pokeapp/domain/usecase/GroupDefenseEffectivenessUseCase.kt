@@ -15,15 +15,15 @@ import javax.inject.Inject
  */
 class GroupDefenseEffectivenessUseCase @Inject constructor() {
 
-    operator fun invoke(defenders: List<Type>, generation: Int): Map<DefenseBucket, List<Type>> {
-        if (defenders.isEmpty()) {
-            return DefenseBucket.entries.associateWith { emptyList() }
-        }
-        val incoming = TypeEffectivenessMatrix.defendingWeaknesses(defenders, generation)
-        val byBucket = incoming.entries.groupBy(
-            keySelector = { DefenseBucket.forMultiplier(it.value) },
-            valueTransform = { it.key },
-        )
-        return DefenseBucket.entries.associateWith { byBucket[it].orEmpty() }
+  operator fun invoke(defenders: List<Type>, generation: Int): Map<DefenseBucket, List<Type>> {
+    if (defenders.isEmpty()) {
+      return DefenseBucket.entries.associateWith { emptyList() }
     }
+    val incoming = TypeEffectivenessMatrix.defendingWeaknesses(defenders, generation)
+    val byBucket = incoming.entries.groupBy(
+      keySelector = { DefenseBucket.forMultiplier(it.value) },
+      valueTransform = { it.key },
+    )
+    return DefenseBucket.entries.associateWith { byBucket[it].orEmpty() }
+  }
 }

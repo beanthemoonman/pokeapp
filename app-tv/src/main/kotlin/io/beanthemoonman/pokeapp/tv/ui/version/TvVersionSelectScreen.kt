@@ -38,104 +38,107 @@ import io.beanthemoonman.pokeapp.ui.common.theme.accentColor
 /** Root leanback generation selector — a D-pad grid of generation cards. */
 @Composable
 fun TvVersionSelectScreen(
-    onGenerationChosen: () -> Unit,
-    modifier: Modifier = Modifier,
-    viewModel: TvVersionSelectViewModel = hiltViewModel(),
+  onGenerationChosen: () -> Unit,
+  modifier: Modifier = Modifier,
+  viewModel: TvVersionSelectViewModel = hiltViewModel(),
 ) {
-    val selectedId by viewModel.selectedId.collectAsStateWithLifecycle()
-    val firstItem = remember { FocusRequester() }
+  val selectedId by viewModel.selectedId.collectAsStateWithLifecycle()
+  val firstItem = remember { FocusRequester() }
 
-    LaunchedEffect(Unit) { firstItem.requestFocus() }
+  LaunchedEffect(Unit) { firstItem.requestFocus() }
 
-    Column(modifier = modifier.fillMaxSize().background(PokedexColors.Background).padding(48.dp)) {
-        Header()
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(top = 26.dp, bottom = 18.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            itemsIndexed(viewModel.generations) { index, generation ->
-                val focusModifier = if (index == 0) Modifier.focusRequester(firstItem) else Modifier
-                FocusableGenerationCard(
-                    generation = generation,
-                    selected = generation.id == selectedId,
-                    onClick = { viewModel.select(generation.id, onGenerationChosen) },
-                    modifier = focusModifier,
-                )
-            }
-        }
-        Footer()
+  Column(modifier = modifier
+    .fillMaxSize()
+    .background(PokedexColors.Background)
+    .padding(48.dp)) {
+    Header()
+    LazyVerticalGrid(
+      columns = GridCells.Fixed(3),
+      modifier = Modifier.fillMaxSize(),
+      contentPadding = PaddingValues(top = 26.dp, bottom = 18.dp),
+      horizontalArrangement = Arrangement.spacedBy(16.dp),
+      verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+      itemsIndexed(viewModel.generations) { index, generation ->
+        val focusModifier = if (index == 0) Modifier.focusRequester(firstItem) else Modifier
+        FocusableGenerationCard(
+          generation = generation,
+          selected = generation.id == selectedId,
+          onClick = { viewModel.select(generation.id, onGenerationChosen) },
+          modifier = focusModifier,
+        )
+      }
     }
+    Footer()
+  }
 }
 
 /** [LazyVerticalGrid] has no built-in indexed items helper; thread the index ourselves. */
 private inline fun <T> androidx.compose.foundation.lazy.grid.LazyGridScope.itemsIndexed(
-    items: List<T>,
-    crossinline itemContent: @Composable (index: Int, item: T) -> Unit,
+  items: List<T>,
+  crossinline itemContent: @Composable (index: Int, item: T) -> Unit,
 ) {
-    items(count = items.size, key = { items[it].hashCode() }) { index ->
-        itemContent(index, items[index])
-    }
+  items(count = items.size, key = { items[it].hashCode() }) { index ->
+    itemContent(index, items[index])
+  }
 }
 
 @Composable
 private fun FocusableGenerationCard(
-    generation: Generation,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+  generation: Generation,
+  selected: Boolean,
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier,
 ) {
-    val interaction = remember { MutableInteractionSource() }
-    val focused by interaction.collectIsFocusedAsState()
-    GenerationCard(
-        generation = generation,
-        selected = selected || focused,
-        onClick = onClick,
-        modifier = modifier
-            .tvFocusRing(focused = focused, accent = generation.accentColor(), cornerRadius = 16.dp)
-            .clickable(interactionSource = interaction, indication = null, onClick = onClick)
-            .focusable(interactionSource = interaction),
-    )
+  val interaction = remember { MutableInteractionSource() }
+  val focused by interaction.collectIsFocusedAsState()
+  GenerationCard(
+    generation = generation,
+    selected = selected || focused,
+    onClick = onClick,
+    modifier = modifier
+      .tvFocusRing(focused = focused, accent = generation.accentColor(), cornerRadius = 16.dp)
+      .clickable(interactionSource = interaction, indication = null, onClick = onClick)
+      .focusable(interactionSource = interaction),
+  )
 }
 
 @Composable
 private fun Header() {
-    Column {
-        Text(
-            text = stringResource(R.string.version_eyebrow).uppercase(),
-            color = PokedexColors.TextFaint,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.8.sp,
-        )
-        Text(
-            text = stringResource(R.string.version_title),
-            color = PokedexColors.TextPrimary,
-            fontSize = 34.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = (-0.5).sp,
-            modifier = Modifier.padding(top = 8.dp),
-        )
-    }
+  Column {
+    Text(
+      text = stringResource(R.string.version_eyebrow).uppercase(),
+      color = PokedexColors.TextFaint,
+      fontSize = 12.sp,
+      fontWeight = FontWeight.Bold,
+      letterSpacing = 1.8.sp,
+    )
+    Text(
+      text = stringResource(R.string.version_title),
+      color = PokedexColors.TextPrimary,
+      fontSize = 34.sp,
+      fontWeight = FontWeight.Bold,
+      letterSpacing = (-0.5).sp,
+      modifier = Modifier.padding(top = 8.dp),
+    )
+  }
 }
 
 @Composable
 private fun Footer() {
-    Row(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
-        FooterHint(stringResource(R.string.version_hint_select))
-        FooterHint(stringResource(R.string.version_hint_confirm))
-    }
+  Row(horizontalArrangement = Arrangement.spacedBy(18.dp)) {
+    FooterHint(stringResource(R.string.version_hint_select))
+    FooterHint(stringResource(R.string.version_hint_confirm))
+  }
 }
 
 @Composable
 private fun FooterHint(text: String) {
-    Text(
-        text = text,
-        color = PokedexColors.TextFaint,
-        fontSize = 11.5.sp,
-        fontFamily = FontFamily.Monospace,
-        letterSpacing = 0.5.sp,
-    )
+  Text(
+    text = text,
+    color = PokedexColors.TextFaint,
+    fontSize = 11.5.sp,
+    fontFamily = FontFamily.Monospace,
+    letterSpacing = 0.5.sp,
+  )
 }

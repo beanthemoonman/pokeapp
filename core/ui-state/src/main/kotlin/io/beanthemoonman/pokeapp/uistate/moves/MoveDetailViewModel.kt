@@ -17,41 +17,41 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MoveDetailViewModel @Inject constructor(
-    private val getMoveDetail: GetMoveDetailUseCase,
-    savedStateHandle: SavedStateHandle,
+  private val getMoveDetail: GetMoveDetailUseCase,
+  savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val moveId: Int = savedStateHandle.get<Int>(ARG_ID) ?: 0
+  private val moveId: Int = savedStateHandle.get<Int>(ARG_ID) ?: 0
 
-    private val _state = MutableStateFlow<UiState<Move>>(UiState.Loading)
-    val state: StateFlow<UiState<Move>> = _state.asStateFlow()
+  private val _state = MutableStateFlow<UiState<Move>>(UiState.Loading)
+  val state: StateFlow<UiState<Move>> = _state.asStateFlow()
 
-    init {
-        load()
+  init {
+    load()
+  }
+
+  fun retry() {
+    Timber.i("move detail retry id=%d", moveId)
+    load()
+  }
+
+  private fun load() {
+    _state.value = UiState.Loading
+    viewModelScope.launch {
+      try {
+        Timber.d("move detail loading id=%d", moveId)
+        _state.value = UiState.Success(getMoveDetail(moveId))
+      } catch (e: CancellationException) {
+        throw e
+      } catch (e: Exception) {
+        Timber.e(e, "move detail load failed id=%d", moveId)
+        _state.value = UiState.Error(e.message ?: "Something went wrong")
+      }
     }
+  }
 
-    fun retry() {
-        Timber.i("move detail retry id=%d", moveId)
-        load()
-    }
-
-    private fun load() {
-        _state.value = UiState.Loading
-        viewModelScope.launch {
-            try {
-                Timber.d("move detail loading id=%d", moveId)
-                _state.value = UiState.Success(getMoveDetail(moveId))
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                Timber.e(e, "move detail load failed id=%d", moveId)
-                _state.value = UiState.Error(e.message ?: "Something went wrong")
-            }
-        }
-    }
-
-    companion object {
-        /** Nav argument key for the move id; shared by both app targets. */
-        const val ARG_ID = "id"
-    }
+  companion object {
+    /** Nav argument key for the move id; shared by both app targets. */
+    const val ARG_ID = "id"
+  }
 }

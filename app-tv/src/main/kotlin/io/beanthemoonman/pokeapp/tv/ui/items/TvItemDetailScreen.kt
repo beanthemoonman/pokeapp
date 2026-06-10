@@ -38,56 +38,118 @@ import io.beanthemoonman.pokeapp.uistate.items.ItemDetailViewModel
 /** TV item detail — split identity panel + effect/description (tv-screens.jsx `TVItemDetail`). */
 @Composable
 fun TvItemDetailScreen(
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-    viewModel: ItemDetailViewModel = hiltViewModel(),
+  onBack: () -> Unit,
+  modifier: Modifier = Modifier,
+  viewModel: ItemDetailViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    Box(modifier = modifier.fillMaxSize().background(PokedexColors.Background)) {
-        when (val s = state) {
-            is UiState.Loading -> Box(Modifier.fillMaxSize().padding(44.dp)) { TvBackBar(stringResource(R.string.items_back)) }
-            is UiState.Error -> TvErrorState(ItemAccent, stringResource(R.string.items_error_title), stringResource(R.string.items_error_body), viewModel::retry)
-            is UiState.Success -> ItemDetailContent(s.data)
-        }
+  val state by viewModel.state.collectAsStateWithLifecycle()
+  Box(modifier = modifier
+    .fillMaxSize()
+    .background(PokedexColors.Background)) {
+    when (val s = state) {
+      is UiState.Loading -> Box(
+        Modifier
+          .fillMaxSize()
+          .padding(44.dp)
+      ) { TvBackBar(stringResource(R.string.items_back)) }
+
+      is UiState.Error -> TvErrorState(
+        ItemAccent,
+        stringResource(R.string.items_error_title),
+        stringResource(R.string.items_error_body),
+        viewModel::retry
+      )
+
+      is UiState.Success -> ItemDetailContent(s.data)
     }
+  }
 }
 
 @Composable
 private fun ItemDetailContent(item: Item) {
-    Row(Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier.fillMaxWidth(0.44f).fillMaxHeight().border(1.dp, PokedexColors.Line).padding(44.dp),
-        ) {
-            TvBackBar(stringResource(R.string.items_back))
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                ItemTile(size = 130.dp, cornerRadius = 20.dp)
-                Column {
-                    Text(stringResource(item.category.labelRes()).uppercase(), color = ItemAccent, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
-                    Text(item.name, color = PokedexColors.TextPrimary, fontSize = 34.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 6.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text(stringResource(R.string.items_buy).uppercase(), color = PokedexColors.TextFaint, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                        ItemCost(item.cost)
-                    }
-                }
-            }
+  Row(Modifier.fillMaxSize()) {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth(0.44f)
+        .fillMaxHeight()
+        .border(1.dp, PokedexColors.Line)
+        .padding(44.dp),
+    ) {
+      TvBackBar(stringResource(R.string.items_back))
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(24.dp)
+      ) {
+        ItemTile(size = 130.dp, cornerRadius = 20.dp)
+        Column {
+          Text(
+            stringResource(item.category.labelRes()).uppercase(),
+            color = ItemAccent,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.2.sp
+          )
+          Text(
+            item.name,
+            color = PokedexColors.TextPrimary,
+            fontSize = 34.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(vertical = 6.dp)
+          )
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+          ) {
+            Text(
+              stringResource(R.string.items_buy).uppercase(),
+              color = PokedexColors.TextFaint,
+              fontSize = 11.sp,
+              fontWeight = FontWeight.Bold
+            )
+            ItemCost(item.cost)
+          }
         }
-        Column(Modifier.weight(1f).fillMaxHeight().padding(44.dp).verticalScroll(rememberScrollState())) {
-            Label(stringResource(R.string.items_effect))
-            Spacer(Modifier.height(10.dp))
-            Text(item.shortEffect, color = PokedexColors.TextPrimary, fontSize = 16.sp, lineHeight = 26.sp)
-            Spacer(Modifier.height(26.dp))
-            Column(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(PokedexColors.Surface).border(1.dp, PokedexColors.Line, RoundedCornerShape(14.dp)).padding(20.dp),
-            ) {
-                Label(stringResource(R.string.items_description))
-                Spacer(Modifier.height(9.dp))
-                Text(item.flavor, color = PokedexColors.TextDim, fontSize = 14.5.sp, lineHeight = 24.sp)
-            }
-        }
+      }
     }
+    Column(
+      Modifier
+        .weight(1f)
+        .fillMaxHeight()
+        .padding(44.dp)
+        .verticalScroll(rememberScrollState())
+    ) {
+      Label(stringResource(R.string.items_effect))
+      Spacer(Modifier.height(10.dp))
+      Text(
+        item.shortEffect,
+        color = PokedexColors.TextPrimary,
+        fontSize = 16.sp,
+        lineHeight = 26.sp
+      )
+      Spacer(Modifier.height(26.dp))
+      Column(
+        Modifier
+          .fillMaxWidth()
+          .clip(RoundedCornerShape(14.dp))
+          .background(PokedexColors.Surface)
+          .border(1.dp, PokedexColors.Line, RoundedCornerShape(14.dp))
+          .padding(20.dp),
+      ) {
+        Label(stringResource(R.string.items_description))
+        Spacer(Modifier.height(9.dp))
+        Text(item.flavor, color = PokedexColors.TextDim, fontSize = 14.5.sp, lineHeight = 24.sp)
+      }
+    }
+  }
 }
 
 @Composable
 private fun Label(text: String) {
-    Text(text.uppercase(), color = PokedexColors.TextFaint, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.6.sp)
+  Text(
+    text.uppercase(),
+    color = PokedexColors.TextFaint,
+    fontSize = 11.sp,
+    fontWeight = FontWeight.Bold,
+    letterSpacing = 1.6.sp
+  )
 }

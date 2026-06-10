@@ -33,73 +33,80 @@ import io.beanthemoonman.pokeapp.ui.common.theme.accentColor
  */
 @Composable
 fun GenerationCard(
-    generation: Generation,
-    modifier: Modifier = Modifier,
-    selected: Boolean = false,
-    onClick: () -> Unit = {},
+  generation: Generation,
+  modifier: Modifier = Modifier,
+  selected: Boolean = false,
+  onClick: () -> Unit = {},
 ) {
-    val accent = generation.accentColor()
-    val shape = RoundedCornerShape(16.dp)
-    val container = if (selected) {
-        Modifier.background(Brush.linearGradient(listOf(accent.copy(alpha = 0.2f), PokedexColors.Surface)))
-    } else {
-        Modifier.background(PokedexColors.Surface)
-    }
+  val accent = generation.accentColor()
+  val shape = RoundedCornerShape(16.dp)
+  val container = if (selected) {
+    Modifier.background(
+      Brush.linearGradient(
+        listOf(
+          accent.copy(alpha = 0.2f),
+          PokedexColors.Surface
+        )
+      )
+    )
+  } else {
+    Modifier.background(PokedexColors.Surface)
+  }
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .then(container)
-            .border(1.dp, if (selected) accent.copy(alpha = 0.5f) else PokedexColors.Line, shape)
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+  Row(
+    modifier = modifier
+      .fillMaxWidth()
+      .clip(shape)
+      .then(container)
+      .border(1.dp, if (selected) accent.copy(alpha = 0.5f) else PokedexColors.Line, shape)
+      .clickable(onClick = onClick)
+      .padding(16.dp),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(16.dp),
+  ) {
+    Box(
+      modifier = Modifier
+        .size(60.dp)
+        .clip(RoundedCornerShape(14.dp))
+        .background(Brush.radialGradient(listOf(accent, accent.copy(alpha = 0.35f)))),
+      contentAlignment = Alignment.Center,
     ) {
-        Box(
-            modifier = Modifier
-                .size(60.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(Brush.radialGradient(listOf(accent, accent.copy(alpha = 0.35f)))),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = generation.label,
-                color = TypeOnLight,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = "GENERATION ${generation.label}",
-                color = accent,
-                fontSize = 10.5.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.5.sp,
-            )
-            Text(
-                text = generation.region,
-                color = PokedexColors.TextPrimary,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 2.dp, bottom = 4.dp),
-            )
-            Text(
-                text = "#1–${generation.dexEnd} · ${generation.dexEnd} entries",
-                color = PokedexColors.TextDim,
-                fontSize = 11.sp,
-                fontFamily = FontFamily.Monospace,
-            )
-            Text(
-                text = generation.versions.joinToString(" · "),
-                color = PokedexColors.TextFaint,
-                fontSize = 11.sp,
-                maxLines = 1,
-                modifier = Modifier.padding(top = 6.dp),
-            )
-        }
-        Text(text = "›", color = if (selected) accent else PokedexColors.TextFaint, fontSize = 22.sp)
+      Text(
+        text = generation.label,
+        color = TypeOnLight,
+        fontSize = 20.sp,
+        fontWeight = FontWeight.Bold,
+      )
     }
+    Column(modifier = Modifier.weight(1f)) {
+      Text(
+        text = "GENERATION ${generation.label}",
+        color = accent,
+        fontSize = 10.5.sp,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 1.5.sp,
+      )
+      Text(
+        text = generation.region,
+        color = PokedexColors.TextPrimary,
+        fontSize = 20.sp,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(top = 2.dp, bottom = 4.dp),
+      )
+      Text(
+        text = "#1–${generation.dexEnd} · ${generation.dexEnd} entries",
+        color = PokedexColors.TextDim,
+        fontSize = 11.sp,
+        fontFamily = FontFamily.Monospace,
+      )
+      Text(
+        text = generation.versions.joinToString(" · "),
+        color = PokedexColors.TextFaint,
+        fontSize = 11.sp,
+        maxLines = 1,
+        modifier = Modifier.padding(top = 6.dp),
+      )
+    }
+    Text(text = "›", color = if (selected) accent else PokedexColors.TextFaint, fontSize = 22.sp)
+  }
 }

@@ -40,81 +40,87 @@ import io.beanthemoonman.pokeapp.uistate.team.TeamViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeamScreen(
-    modifier: Modifier = Modifier,
-    viewModel: TeamViewModel = hiltViewModel(),
+  modifier: Modifier = Modifier,
+  viewModel: TeamViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    val picker by viewModel.picker.collectAsStateWithLifecycle()
+  val state by viewModel.state.collectAsStateWithLifecycle()
+  val picker by viewModel.picker.collectAsStateWithLifecycle()
 
-    val filledCount = (state as? UiState.Success)?.data?.filledCount ?: 0
+  val filledCount = (state as? UiState.Success)?.data?.filledCount ?: 0
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        containerColor = PokedexColors.Background,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.team_title),
-                        color = PokedexColors.TextPrimary,
-                        fontWeight = FontWeight.Bold,
-                    )
-                },
-                actions = {
-                    Text(
-                        text = stringResource(R.string.team_count, filledCount),
-                        color = PokedexColors.TextDim,
-                        fontSize = 14.sp,
-                        fontFamily = FontFamily.Monospace,
-                        modifier = Modifier.padding(end = 16.dp),
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PokedexColors.Background,
-                    titleContentColor = PokedexColors.TextPrimary,
-                ),
-            )
+  Scaffold(
+    modifier = modifier.fillMaxSize(),
+    containerColor = PokedexColors.Background,
+    topBar = {
+      TopAppBar(
+        title = {
+          Text(
+            text = stringResource(R.string.team_title),
+            color = PokedexColors.TextPrimary,
+            fontWeight = FontWeight.Bold,
+          )
         },
-    ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            when (val s = state) {
-                is UiState.Loading -> CircularProgressIndicator(
-                    color = Type.GRASS.color(),
-                    modifier = Modifier.align(Alignment.Center),
-                )
-                is UiState.Error -> Text(
-                    text = s.message,
-                    color = PokedexColors.TextDim,
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.align(Alignment.Center).padding(horizontal = 40.dp),
-                )
-                is UiState.Success -> Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(22.dp),
-                ) {
-                    TeamSlotGrid(
-                        team = s.data.team,
-                        onSlotClick = viewModel::openPicker,
-                        onRemove = viewModel::removeSlot,
-                    )
-                    TeamCoveragePanel(
-                        coverage = s.data.coverage,
-                        hasMembers = s.data.hasMembers,
-                    )
-                }
-            }
-        }
-    }
+        actions = {
+          Text(
+            text = stringResource(R.string.team_count, filledCount),
+            color = PokedexColors.TextDim,
+            fontSize = 14.sp,
+            fontFamily = FontFamily.Monospace,
+            modifier = Modifier.padding(end = 16.dp),
+          )
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+          containerColor = PokedexColors.Background,
+          titleContentColor = PokedexColors.TextPrimary,
+        ),
+      )
+    },
+  ) { innerPadding ->
+    Box(modifier = Modifier
+      .fillMaxSize()
+      .padding(innerPadding)) {
+      when (val s = state) {
+        is UiState.Loading -> CircularProgressIndicator(
+          color = Type.GRASS.color(),
+          modifier = Modifier.align(Alignment.Center),
+        )
 
-    TeamPickerSheet(
-        state = picker,
-        onQueryChange = viewModel::onPickerQueryChange,
-        onSelect = viewModel::selectPokemon,
-        onRemove = viewModel::removeSlot,
-        onDismiss = viewModel::closePicker,
-    )
+        is UiState.Error -> Text(
+          text = s.message,
+          color = PokedexColors.TextDim,
+          fontSize = 14.sp,
+          textAlign = TextAlign.Center,
+          modifier = Modifier
+            .align(Alignment.Center)
+            .padding(horizontal = 40.dp),
+        )
+
+        is UiState.Success -> Column(
+          modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+          verticalArrangement = Arrangement.spacedBy(22.dp),
+        ) {
+          TeamSlotGrid(
+            team = s.data.team,
+            onSlotClick = viewModel::openPicker,
+            onRemove = viewModel::removeSlot,
+          )
+          TeamCoveragePanel(
+            coverage = s.data.coverage,
+            hasMembers = s.data.hasMembers,
+          )
+        }
+      }
+    }
+  }
+
+  TeamPickerSheet(
+    state = picker,
+    onQueryChange = viewModel::onPickerQueryChange,
+    onSelect = viewModel::selectPokemon,
+    onRemove = viewModel::removeSlot,
+    onDismiss = viewModel::closePicker,
+  )
 }

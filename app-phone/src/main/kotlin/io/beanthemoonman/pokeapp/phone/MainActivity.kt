@@ -10,13 +10,13 @@ import io.beanthemoonman.pokeapp.ui.common.theme.PokedexTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
-        super.onCreate(savedInstanceState)
-        setContent {
-            PokedexTheme {
-                PokedexApp()
-            }
-        }
+  override fun onCreate(savedInstanceState: Bundle?) {
+    enableEdgeToEdge()
+    super.onCreate(savedInstanceState)
+    setContent {
+      PokedexTheme {
+        PokedexApp()
+      }
     }
+  }
 }

@@ -24,40 +24,40 @@ enum class TypeBadgeSize { SM, MD, LG }
  */
 @Composable
 fun TypeBadge(
-    type: Type,
-    modifier: Modifier = Modifier,
-    size: TypeBadgeSize = TypeBadgeSize.MD,
-    soft: Boolean = false,
+  type: Type,
+  modifier: Modifier = Modifier,
+  size: TypeBadgeSize = TypeBadgeSize.MD,
+  soft: Boolean = false,
 ) {
-    val accent = type.color()
-    val (padding, fontSize) = when (size) {
-        TypeBadgeSize.SM -> PaddingValues(horizontal = 8.dp, vertical = 3.dp) to 10.sp
-        TypeBadgeSize.MD -> PaddingValues(horizontal = 11.dp, vertical = 4.dp) to 11.5.sp
-        TypeBadgeSize.LG -> PaddingValues(horizontal = 15.dp, vertical = 6.dp) to 14.sp
-    }
+  val accent = type.color()
+  val (padding, fontSize) = when (size) {
+    TypeBadgeSize.SM -> PaddingValues(horizontal = 8.dp, vertical = 3.dp) to 10.sp
+    TypeBadgeSize.MD -> PaddingValues(horizontal = 11.dp, vertical = 4.dp) to 11.5.sp
+    TypeBadgeSize.LG -> PaddingValues(horizontal = 15.dp, vertical = 6.dp) to 14.sp
+  }
 
-    val shape = RoundedCornerShape(percent = 50)
-    val base = if (soft) {
-        modifier
-            .clip(shape)
-            .background(accent.copy(alpha = 0.16f))
-            .border(1.dp, accent.copy(alpha = 0.4f), shape)
-    } else {
-        modifier
-            .clip(shape)
-            .background(accent)
-    }
+  val shape = RoundedCornerShape(percent = 50)
+  val base = if (soft) {
+    modifier
+      .clip(shape)
+      .background(accent.copy(alpha = 0.16f))
+      .border(1.dp, accent.copy(alpha = 0.4f), shape)
+  } else {
+    modifier
+      .clip(shape)
+      .background(accent)
+  }
 
-    Text(
-        text = type.name,
-        modifier = base.padding(padding),
-        color = if (soft) accent else type.onColor(),
-        fontSize = fontSize,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = 0.06.em(fontSize),
-    )
+  Text(
+    text = type.name,
+    modifier = base.padding(padding),
+    color = if (soft) accent else type.onColor(),
+    fontSize = fontSize,
+    fontWeight = FontWeight.Bold,
+    letterSpacing = 0.06.em(fontSize),
+  )
 }
 
 /** Letter-spacing helper: wireframe uses .06em; Compose wants sp. */
 private fun Double.em(fontSize: androidx.compose.ui.unit.TextUnit) =
-    (this * fontSize.value).sp
+  (this * fontSize.value).sp

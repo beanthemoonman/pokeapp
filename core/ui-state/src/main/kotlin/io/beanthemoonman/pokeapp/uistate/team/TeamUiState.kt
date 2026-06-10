@@ -10,12 +10,12 @@ import io.beanthemoonman.pokeapp.domain.model.TeamCoverage
  * analysis of whichever members are filled.
  */
 data class TeamData(
-    val generation: Generation,
-    val team: List<Pokemon?>,
-    val coverage: TeamCoverage,
+  val generation: Generation,
+  val team: List<Pokemon?>,
+  val coverage: TeamCoverage,
 ) {
-    val filledCount: Int get() = team.count { it != null }
-    val hasMembers: Boolean get() = filledCount > 0
+  val filledCount: Int get() = team.count { it != null }
+  val hasMembers: Boolean get() = filledCount > 0
 }
 
 /**
@@ -24,20 +24,20 @@ data class TeamData(
  * already filled, so the overlay can offer a Remove action.
  */
 sealed interface TeamPickerUiState {
-    data object Closed : TeamPickerUiState
-    data class Open(
-        val slot: Int,
-        val replacing: Boolean,
-        val query: String,
-        val results: PickerResults,
-    ) : TeamPickerUiState
+  data object Closed : TeamPickerUiState
+  data class Open(
+    val slot: Int,
+    val replacing: Boolean,
+    val query: String,
+    val results: PickerResults,
+  ) : TeamPickerUiState
 }
 
 /** Result state for the picker's search box. Idle = blank query (prompt). */
 sealed interface PickerResults {
-    data object Idle : PickerResults
-    data object Loading : PickerResults
-    data object Empty : PickerResults
-    data class Results(val items: List<Pokemon>) : PickerResults
-    data object Error : PickerResults
+  data object Idle : PickerResults
+  data object Loading : PickerResults
+  data object Empty : PickerResults
+  data class Results(val items: List<Pokemon>) : PickerResults
+  data object Error : PickerResults
 }

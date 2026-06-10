@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Snorlax logo centered within the adaptive-icon safe zone (66x53dp inside the 108dp canvas). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:width="66dp"
+        android:height="53dp"
+        android:gravity="center"
+        android:drawable="@drawable/snorlax" />
+</layer-list>

@@ -29,37 +29,42 @@ import io.beanthemoonman.pokeapp.ui.common.theme.accentColor
  */
 @Composable
 fun VersionChip(
-    generation: Generation,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+  generation: Generation,
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier,
 ) {
-    val accent = generation.accentColor()
-    val shape = RoundedCornerShape(percent = 50)
-    Row(
-        modifier = modifier
-            .clip(shape)
-            .background(accent.copy(alpha = 0.14f))
-            .border(1.dp, accent.copy(alpha = 0.4f), shape)
-            .clickable(onClick = onClick)
-            .padding(start = 7.dp, end = 10.dp, top = 6.dp, bottom = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(7.dp),
+  val accent = generation.accentColor()
+  val shape = RoundedCornerShape(percent = 50)
+  Row(
+    modifier = modifier
+      .clip(shape)
+      .background(accent.copy(alpha = 0.14f))
+      .border(1.dp, accent.copy(alpha = 0.4f), shape)
+      .clickable(onClick = onClick)
+      .padding(start = 7.dp, end = 10.dp, top = 6.dp, bottom = 6.dp),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(7.dp),
+  ) {
+    Box(
+      modifier = Modifier
+        .size(17.dp)
+        .clip(RoundedCornerShape(5.dp))
+        .background(Brush.linearGradient(listOf(accent, accent.copy(alpha = 0.5f)))),
+      contentAlignment = Alignment.Center,
     ) {
-        Box(
-            modifier = Modifier
-                .size(17.dp)
-                .clip(RoundedCornerShape(5.dp))
-                .background(Brush.linearGradient(listOf(accent, accent.copy(alpha = 0.5f)))),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(text = generation.label, color = TypeOnLight, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-        }
-        Text(
-            text = generation.region,
-            color = PokedexColors.TextPrimary,
-            fontSize = 11.5.sp,
-            fontWeight = FontWeight.Bold,
-        )
-        Text(text = "›", color = PokedexColors.TextDim, fontSize = 14.sp)
+      Text(
+        text = generation.label,
+        color = TypeOnLight,
+        fontSize = 9.sp,
+        fontWeight = FontWeight.Bold
+      )
     }
+    Text(
+      text = generation.region,
+      color = PokedexColors.TextPrimary,
+      fontSize = 11.5.sp,
+      fontWeight = FontWeight.Bold,
+    )
+    Text(text = "›", color = PokedexColors.TextDim, fontSize = 14.sp)
+  }
 }

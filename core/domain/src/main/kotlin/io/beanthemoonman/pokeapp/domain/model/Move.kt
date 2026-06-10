@@ -12,13 +12,13 @@ package io.beanthemoonman.pokeapp.domain.model
  * (e.g. "unknown"); the UI renders those without a [TypeBadge].
  */
 data class Move(
-    val id: Int,
-    val name: String,
-    val type: Type?,
-    val category: MoveCategory,
-    val power: Int?,
-    val accuracy: Int?,
-    val pp: Int,
-    val generationId: Int,
-    val shortEffect: String,
+  val id: Int,
+  val name: String,
+  val type: Type?,
+  val category: MoveCategory,
+  val power: Int?,
+  val accuracy: Int?,
+  val pp: Int,
+  val generationId: Int,
+  val shortEffect: String,
 )

@@ -17,20 +17,20 @@ private val Context.settingsDataStore by preferencesDataStore(name = "pokedex_se
 
 @Singleton
 class GenerationRepositoryImpl @Inject constructor(
-    @param:ApplicationContext private val context: Context
+  @param:ApplicationContext private val context: Context
 ) : GenerationRepository {
 
-    override val selectedGenerationId: Flow<Int?> =
-        context.settingsDataStore.data
-            .map { prefs -> prefs[KEY_SELECTED_GENERATION] }
-            .onEach { Timber.d("selectedGenerationId emitted -> %s", it) }
+  override val selectedGenerationId: Flow<Int?> =
+    context.settingsDataStore.data
+      .map { prefs -> prefs[KEY_SELECTED_GENERATION] }
+      .onEach { Timber.d("selectedGenerationId emitted -> %s", it) }
 
-    override suspend fun selectGeneration(id: Int) {
-        Timber.i("selectGeneration persisting id=%d", id)
-        context.settingsDataStore.edit { prefs -> prefs[KEY_SELECTED_GENERATION] = id }
-    }
+  override suspend fun selectGeneration(id: Int) {
+    Timber.i("selectGeneration persisting id=%d", id)
+    context.settingsDataStore.edit { prefs -> prefs[KEY_SELECTED_GENERATION] = id }
+  }
 
-    private companion object {
-        val KEY_SELECTED_GENERATION = intPreferencesKey("selected_generation")
-    }
+  private companion object {
+    val KEY_SELECTED_GENERATION = intPreferencesKey("selected_generation")
+  }
 }

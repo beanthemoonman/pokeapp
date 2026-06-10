@@ -8,8 +8,8 @@ import com.google.gson.annotations.SerializedName
  * lists for generations `1..X`.
  */
 data class GenerationDto(
-    val id: Int,
-    val moves: List<NamedApiResourceDto> = emptyList()
+  val id: Int,
+  val moves: List<NamedApiResourceDto> = emptyList()
 )
 
 /**
@@ -18,19 +18,19 @@ data class GenerationDto(
  * [generation] and the English [effectEntries].
  */
 data class MoveDetailDto(
-    val id: Int,
-    val name: String,
-    val power: Int?,
-    val accuracy: Int?,
-    val pp: Int?,
-    val type: NamedApiResourceDto,
-    @SerializedName("damage_class") val damageClass: NamedApiResourceDto?,
-    val generation: NamedApiResourceDto,
-    @SerializedName("effect_entries") val effectEntries: List<MoveEffectEntryDto> = emptyList()
+  val id: Int,
+  val name: String,
+  val power: Int?,
+  val accuracy: Int?,
+  val pp: Int?,
+  val type: NamedApiResourceDto,
+  @SerializedName("damage_class") val damageClass: NamedApiResourceDto?,
+  val generation: NamedApiResourceDto,
+  @SerializedName("effect_entries") val effectEntries: List<MoveEffectEntryDto> = emptyList()
 )
 
 data class MoveEffectEntryDto(
-    val effect: String,
-    @SerializedName("short_effect") val shortEffect: String,
-    val language: NamedApiResourceDto
+  val effect: String,
+  @SerializedName("short_effect") val shortEffect: String,
+  val language: NamedApiResourceDto
 )

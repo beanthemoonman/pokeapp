@@ -1,19 +1,17 @@
-import org.gradle.kotlin.dsl.dependencies
-
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+  alias(libs.plugins.kotlin.jvm)
 }
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(17)
+  }
 }
 
 dependencies {
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.javax.inject)
+  implementation(libs.kotlinx.coroutines.core)
+  implementation(libs.javax.inject)
 
-    testImplementation(libs.junit)
-    testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.junit)
+  testImplementation(libs.kotlinx.coroutines.test)
 }

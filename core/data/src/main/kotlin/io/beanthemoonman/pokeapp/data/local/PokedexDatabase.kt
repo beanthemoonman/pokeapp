@@ -16,19 +16,19 @@ import io.beanthemoonman.pokeapp.data.local.entity.TeamEntity
 import io.beanthemoonman.pokeapp.data.local.entity.TypeEntity
 
 @Database(
-    entities = [PokemonEntity::class, PokemonDetailEntity::class, TypeEntity::class, TeamEntity::class, ItemEntity::class, MoveEntity::class],
-    version = 4,
-    exportSchema = false
+  entities = [PokemonEntity::class, PokemonDetailEntity::class, TypeEntity::class, TeamEntity::class, ItemEntity::class, MoveEntity::class],
+  version = 6,
+  exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class PokedexDatabase : RoomDatabase() {
-    abstract fun pokemonDao(): PokemonDao
-    abstract fun pokemonDetailDao(): PokemonDetailDao
-    abstract fun teamDao(): TeamDao
-    abstract fun itemDao(): ItemDao
-    abstract fun moveDao(): MoveDao
+  abstract fun pokemonDao(): PokemonDao
+  abstract fun pokemonDetailDao(): PokemonDetailDao
+  abstract fun teamDao(): TeamDao
+  abstract fun itemDao(): ItemDao
+  abstract fun moveDao(): MoveDao
 
-    companion object {
-        const val NAME = "pokedex.db"
-    }
+  companion object {
+    const val NAME = "pokedex.db"
+  }
 }

@@ -9,11 +9,11 @@ import javax.inject.Inject
  * Trims the query and short-circuits a blank one to an empty result.
  */
 class SearchPokemonUseCase @Inject constructor(
-    private val repository: PokemonRepository
+  private val repository: PokemonRepository
 ) {
-    suspend operator fun invoke(query: String, dexEnd: Int): List<Pokemon> {
-        val trimmed = query.trim()
-        if (trimmed.isEmpty()) return emptyList()
-        return repository.searchPokemon(trimmed, dexEnd)
-    }
+  suspend operator fun invoke(query: String, dexEnd: Int): List<Pokemon> {
+    val trimmed = query.trim()
+    if (trimmed.isEmpty()) return emptyList()
+    return repository.searchPokemon(trimmed, dexEnd)
+  }
 }

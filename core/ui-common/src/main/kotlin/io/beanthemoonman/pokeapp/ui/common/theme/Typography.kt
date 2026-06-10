@@ -11,26 +11,26 @@ import androidx.compose.ui.unit.sp
  * (numbers); custom font assets are wired in later. Weights/sizes mirror foundations.jsx.
  */
 val PokedexTypography = Typography(
-    headlineLarge = TextStyle(
-        fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.Bold,
-        fontSize = 30.sp,
-        letterSpacing = (-0.02).sp,
-    ),
-    titleMedium = TextStyle(
-        fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 16.sp,
-    ),
-    bodyMedium = TextStyle(
-        fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-    ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 10.5.sp,
-        letterSpacing = 0.04.sp,
-    ),
+  headlineLarge = TextStyle(
+    fontFamily = FontFamily.SansSerif,
+    fontWeight = FontWeight.Bold,
+    fontSize = 30.sp,
+    letterSpacing = (-0.02).sp,
+  ),
+  titleMedium = TextStyle(
+    fontFamily = FontFamily.SansSerif,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 16.sp,
+  ),
+  bodyMedium = TextStyle(
+    fontFamily = FontFamily.SansSerif,
+    fontWeight = FontWeight.Normal,
+    fontSize = 14.sp,
+  ),
+  labelSmall = TextStyle(
+    fontFamily = FontFamily.SansSerif,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 10.5.sp,
+    letterSpacing = 0.04.sp,
+  ),
 )

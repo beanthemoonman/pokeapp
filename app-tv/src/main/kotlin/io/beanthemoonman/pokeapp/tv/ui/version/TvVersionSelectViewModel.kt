@@ -17,23 +17,23 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TvVersionSelectViewModel @Inject constructor(
-    getGenerations: GetGenerationsUseCase,
-    observeSelectedGeneration: ObserveSelectedGenerationUseCase,
-    private val selectGeneration: SelectGenerationUseCase,
+  getGenerations: GetGenerationsUseCase,
+  observeSelectedGeneration: ObserveSelectedGenerationUseCase,
+  private val selectGeneration: SelectGenerationUseCase,
 ) : ViewModel() {
 
-    val generations: List<Generation> = getGenerations()
+  val generations: List<Generation> = getGenerations()
 
-    val selectedId: StateFlow<Int?> = observeSelectedGeneration()
-        .map { it?.id }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+  val selectedId: StateFlow<Int?> = observeSelectedGeneration()
+    .map { it?.id }
+    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    /** Persist the choice, then invoke [onSelected] (used to navigate into the shell). */
-    fun select(id: Int, onSelected: () -> Unit) {
-        viewModelScope.launch {
-            Timber.i("tv user selected generation id=%d", id)
-            selectGeneration(id)
-            onSelected()
-        }
+  /** Persist the choice, then invoke [onSelected] (used to navigate into the shell). */
+  fun select(id: Int, onSelected: () -> Unit) {
+    viewModelScope.launch {
+      Timber.i("tv user selected generation id=%d", id)
+      selectGeneration(id)
+      onSelected()
     }
+  }
 }

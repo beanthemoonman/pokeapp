@@ -25,28 +25,33 @@ val ItemAccent = Color(0xFFC9A24A)
 /** String resource for a category's chip/eyebrow label. */
 @StringRes
 fun ItemCategory.labelRes(): Int = when (this) {
-    ItemCategory.POKE_BALLS -> R.string.item_cat_balls
-    ItemCategory.HEALING -> R.string.item_cat_healing
-    ItemCategory.MEDICINE -> R.string.item_cat_medicine
-    ItemCategory.EVOLUTION -> R.string.item_cat_evolution
-    ItemCategory.HELD_ITEMS -> R.string.item_cat_held
-    ItemCategory.MEGA_STONES -> R.string.item_cat_mega
-    ItemCategory.KEY_ITEMS -> R.string.item_cat_key
-    ItemCategory.OTHER -> R.string.item_cat_other
+  ItemCategory.POKE_BALLS -> R.string.item_cat_balls
+  ItemCategory.HEALING -> R.string.item_cat_healing
+  ItemCategory.MEDICINE -> R.string.item_cat_medicine
+  ItemCategory.EVOLUTION -> R.string.item_cat_evolution
+  ItemCategory.HELD_ITEMS -> R.string.item_cat_held
+  ItemCategory.MEGA_STONES -> R.string.item_cat_mega
+  ItemCategory.KEY_ITEMS -> R.string.item_cat_key
+  ItemCategory.OTHER -> R.string.item_cat_other
 }
 
 /** Square gold sprite-placeholder tile with a bag glyph (wireframe `TVItemTile`). */
 @Composable
 fun ItemTile(modifier: Modifier = Modifier, size: Dp = 64.dp, cornerRadius: Dp = 12.dp) {
-    val shape = RoundedCornerShape(cornerRadius)
-    Box(
-        modifier = modifier
-            .size(size)
-            .clip(shape)
-            .background(ItemAccent.copy(alpha = 0.16f))
-            .border(1.dp, ItemAccent.copy(alpha = 0.28f), shape),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(Icons.Outlined.Backpack, contentDescription = null, tint = ItemAccent, modifier = Modifier.size(size * 0.42f))
-    }
+  val shape = RoundedCornerShape(cornerRadius)
+  Box(
+    modifier = modifier
+      .size(size)
+      .clip(shape)
+      .background(ItemAccent.copy(alpha = 0.16f))
+      .border(1.dp, ItemAccent.copy(alpha = 0.28f), shape),
+    contentAlignment = Alignment.Center,
+  ) {
+    Icon(
+      Icons.Outlined.Backpack,
+      contentDescription = null,
+      tint = ItemAccent,
+      modifier = Modifier.size(size * 0.42f)
+    )
+  }
 }

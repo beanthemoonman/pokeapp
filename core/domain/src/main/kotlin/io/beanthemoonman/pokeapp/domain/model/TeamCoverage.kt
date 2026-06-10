@@ -9,10 +9,10 @@ package io.beanthemoonman.pokeapp.domain.model
  * super-effectively with one of its own types (STAB coverage holes).
  */
 data class TeamCoverage(
-    val roster: List<Type>,
-    val defensiveWeaknesses: Map<Type, Int>,
-    val offensiveGaps: List<Type>,
+  val roster: List<Type>,
+  val defensiveWeaknesses: Map<Type, Int>,
+  val offensiveGaps: List<Type>,
 ) {
-    /** Distinct types at least one member is weak to. */
-    val weakPointCount: Int get() = defensiveWeaknesses.count { it.value > 0 }
+  /** Distinct types at least one member is weak to. */
+  val weakPointCount: Int get() = defensiveWeaknesses.count { it.value > 0 }
 }

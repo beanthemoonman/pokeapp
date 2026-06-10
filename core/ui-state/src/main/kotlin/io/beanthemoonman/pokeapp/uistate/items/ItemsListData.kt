@@ -9,12 +9,12 @@ import io.beanthemoonman.pokeapp.domain.model.ItemCategory
  * dictionary regardless of the active filter.
  */
 data class ItemsListData(
-    val items: List<Item>,
-    val category: ItemCategory? = null,
-    val isAppending: Boolean = false,
-    val appendError: Boolean = false,
-    val endReached: Boolean = false,
+  val items: List<Item>,
+  val category: ItemCategory? = null,
+  val isAppending: Boolean = false,
+  val appendError: Boolean = false,
+  val endReached: Boolean = false,
 ) {
-    val visible: List<Item>
-        get() = if (category == null) items else items.filter { it.category == category }
+  val visible: List<Item>
+    get() = if (category == null) items else items.filter { it.category == category }
 }

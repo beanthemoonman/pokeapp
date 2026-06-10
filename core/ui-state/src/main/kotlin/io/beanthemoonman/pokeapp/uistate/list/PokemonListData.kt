@@ -8,8 +8,8 @@ import io.beanthemoonman.pokeapp.domain.model.Pokemon
  * with [isAppending] / [appendError] / [endReached] describing the paging tail.
  */
 data class PokemonListData(
-    val items: List<Pokemon>,
-    val isAppending: Boolean = false,
-    val appendError: Boolean = false,
-    val endReached: Boolean = false,
+  val items: List<Pokemon>,
+  val isAppending: Boolean = false,
+  val appendError: Boolean = false,
+  val endReached: Boolean = false,
 )

@@ -8,9 +8,9 @@ import io.beanthemoonman.pokeapp.data.local.entity.PokemonDetailEntity
 @Dao
 interface PokemonDetailDao {
 
-    @Upsert
-    suspend fun upsert(detail: PokemonDetailEntity)
+  @Upsert
+  suspend fun upsert(detail: PokemonDetailEntity)
 
-    @Query("SELECT * FROM pokemon_detail WHERE id = :id")
-    suspend fun getById(id: Int): PokemonDetailEntity?
+  @Query("SELECT * FROM pokemon_detail WHERE id = :id")
+  suspend fun getById(id: Int): PokemonDetailEntity?
 }

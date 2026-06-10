@@ -9,12 +9,12 @@ import io.beanthemoonman.pokeapp.domain.model.MoveCategory
  * over the full generation-scoped dictionary regardless of the active filter.
  */
 data class MovesListData(
-    val moves: List<Move>,
-    val category: MoveCategory? = null,
-    val isAppending: Boolean = false,
-    val appendError: Boolean = false,
-    val endReached: Boolean = false,
+  val moves: List<Move>,
+  val category: MoveCategory? = null,
+  val isAppending: Boolean = false,
+  val appendError: Boolean = false,
+  val endReached: Boolean = false,
 ) {
-    val visible: List<Move>
-        get() = if (category == null) moves else moves.filter { it.category == category }
+  val visible: List<Move>
+    get() = if (category == null) moves else moves.filter { it.category == category }
 }

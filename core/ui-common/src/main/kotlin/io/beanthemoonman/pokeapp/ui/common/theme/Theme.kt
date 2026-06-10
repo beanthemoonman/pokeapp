@@ -10,24 +10,24 @@ import androidx.compose.runtime.Composable
  * No light theme by design (see CLAUDE.md).
  */
 private val PokedexDarkColorScheme = darkColorScheme(
-    background = PokedexColors.Background,
-    surface = PokedexColors.Surface,
-    surfaceVariant = PokedexColors.SurfaceRaised,
-    onBackground = PokedexColors.TextPrimary,
-    onSurface = PokedexColors.TextPrimary,
-    onSurfaceVariant = PokedexColors.TextDim,
-    outline = PokedexColors.Line,
+  background = PokedexColors.Background,
+  surface = PokedexColors.Surface,
+  surfaceVariant = PokedexColors.SurfaceRaised,
+  onBackground = PokedexColors.TextPrimary,
+  onSurface = PokedexColors.TextPrimary,
+  onSurfaceVariant = PokedexColors.TextDim,
+  outline = PokedexColors.Line,
 )
 
 @Composable
 fun PokedexTheme(
-    // Parameter retained for API symmetry; theme is always dark.
-    @Suppress("UNUSED_PARAMETER") darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
+  // Parameter retained for API symmetry; theme is always dark.
+  @Suppress("UNUSED_PARAMETER") darkTheme: Boolean = isSystemInDarkTheme(),
+  content: @Composable () -> Unit
 ) {
-    MaterialTheme(
-        colorScheme = PokedexDarkColorScheme,
-        typography = PokedexTypography,
-        content = content
-    )
+  MaterialTheme(
+    colorScheme = PokedexDarkColorScheme,
+    typography = PokedexTypography,
+    content = content
+  )
 }

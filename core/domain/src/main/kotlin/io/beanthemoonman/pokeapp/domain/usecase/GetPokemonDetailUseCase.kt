@@ -6,7 +6,7 @@ import javax.inject.Inject
 
 /** Fetches a single Pokémon's full detail (cache-first). */
 class GetPokemonDetailUseCase @Inject constructor(
-    private val repository: PokemonRepository
+  private val repository: PokemonRepository
 ) {
-    suspend operator fun invoke(id: Int): Pokemon = repository.getPokemonDetail(id)
+  suspend operator fun invoke(id: Int): Pokemon = repository.getPokemonDetail(id)
 }

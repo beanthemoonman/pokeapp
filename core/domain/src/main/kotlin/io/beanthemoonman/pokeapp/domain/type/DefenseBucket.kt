@@ -7,22 +7,22 @@ package io.beanthemoonman.pokeapp.domain.type
  * most-dangerous first.
  */
 enum class DefenseBucket(val multiplier: Float) {
-    QUAD(4f),
-    DOUBLE(2f),
-    NEUTRAL(1f),
-    HALF(0.5f),
-    QUARTER(0.25f),
-    IMMUNE(0f);
+  QUAD(4f),
+  DOUBLE(2f),
+  NEUTRAL(1f),
+  HALF(0.5f),
+  QUARTER(0.25f),
+  IMMUNE(0f);
 
-    companion object {
-        /** The bucket a stacked defending multiplier (0, ¼, ½, 1, 2, or 4) belongs to. */
-        fun forMultiplier(multiplier: Float): DefenseBucket = when {
-            multiplier >= 4f -> QUAD
-            multiplier >= 2f -> DOUBLE
-            multiplier == 0f -> IMMUNE
-            multiplier <= 0.25f -> QUARTER
-            multiplier < 1f -> HALF
-            else -> NEUTRAL
-        }
+  companion object {
+    /** The bucket a stacked defending multiplier (0, ¼, ½, 1, 2, or 4) belongs to. */
+    fun forMultiplier(multiplier: Float): DefenseBucket = when {
+      multiplier >= 4f -> QUAD
+      multiplier >= 2f -> DOUBLE
+      multiplier == 0f -> IMMUNE
+      multiplier <= 0.25f -> QUARTER
+      multiplier < 1f -> HALF
+      else -> NEUTRAL
     }
+  }
 }

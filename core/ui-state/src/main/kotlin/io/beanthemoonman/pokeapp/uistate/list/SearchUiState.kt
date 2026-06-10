@@ -13,9 +13,9 @@ import io.beanthemoonman.pokeapp.domain.model.Pokemon
  * - [Error]   — the search failed (e.g. offline name-index fetch).
  */
 sealed interface SearchUiState {
-    data object Idle : SearchUiState
-    data object Loading : SearchUiState
-    data class Results(val items: List<Pokemon>) : SearchUiState
-    data object Empty : SearchUiState
-    data class Error(val message: String) : SearchUiState
+  data object Idle : SearchUiState
+  data object Loading : SearchUiState
+  data class Results(val items: List<Pokemon>) : SearchUiState
+  data object Empty : SearchUiState
+  data class Error(val message: String) : SearchUiState
 }

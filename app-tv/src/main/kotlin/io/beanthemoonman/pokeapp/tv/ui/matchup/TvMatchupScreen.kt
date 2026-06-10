@@ -9,6 +9,8 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -23,8 +25,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -60,146 +60,268 @@ import io.beanthemoonman.pokeapp.uistate.typecalc.TypeMatchupViewModel
 /** TV Type Matchup — defensive calculator (tv-screens.jsx `TVMatchup`). */
 @Composable
 fun TvMatchupScreen(
-    onNavigate: (TvNavItem) -> Unit,
-    modifier: Modifier = Modifier,
-    viewModel: TypeMatchupViewModel = hiltViewModel(),
+  onNavigate: (TvNavItem) -> Unit,
+  modifier: Modifier = Modifier,
+  viewModel: TypeMatchupViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    val data = (state as? UiState.Success)?.data
+  val state by viewModel.state.collectAsStateWithLifecycle()
+  val data = (state as? UiState.Success)?.data
 
-    TvScreenScaffold(
-        active = TvNavItem.MATCHUP,
-        onNavigate = onNavigate,
-        modifier = modifier,
-    ) {
-        if (data == null) {
-            Box(Modifier.fillMaxSize())
-            return@TvScreenScaffold
-        }
-        Column(Modifier.fillMaxSize()) {
-            Column {
-                Text(stringResource(R.string.matchup_title), color = PokedexColors.TextPrimary, fontSize = 30.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.6).sp)
-                Text(
-                    text = stringResource(R.string.matchup_subtitle, data.roster.size, data.generation.label),
-                    color = PokedexColors.TextFaint, fontSize = 12.5.sp, fontFamily = FontFamily.Monospace, modifier = Modifier.padding(top = 4.dp),
-                )
-            }
-            Spacer(Modifier.height(18.dp))
-            Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(26.dp)) {
-                // Left — defender hero + picker
-                Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                    DefenderHero(data.defenders)
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        TvSectionLabel(stringResource(R.string.matchup_choose))
-                        if (data.defending) {
-                            Text(stringResource(R.string.matchup_clear), color = PokedexColors.TextDim, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.clickable(onClick = viewModel::clearDefenders).padding(4.dp))
-                        }
-                    }
-                    TypePickerGrid(roster = data.roster, selected = data.defenders, onToggle = viewModel::toggleDefender)
-                }
-                // Right — grouped results
-                ResultsColumn(data, Modifier.weight(1.35f).fillMaxHeight())
-            }
-            TvHints(listOf(stringResource(R.string.matchup_hint_pick), stringResource(R.string.matchup_hint_toggle), stringResource(R.string.matchup_hint_scroll)))
-        }
+  TvScreenScaffold(
+    active = TvNavItem.MATCHUP,
+    onNavigate = onNavigate,
+    modifier = modifier,
+  ) {
+    if (data == null) {
+      Box(Modifier.fillMaxSize())
+      return@TvScreenScaffold
     }
+    Column(Modifier.fillMaxSize()) {
+      Column {
+        Text(
+          stringResource(R.string.matchup_title),
+          color = PokedexColors.TextPrimary,
+          fontSize = 30.sp,
+          fontWeight = FontWeight.Bold,
+          letterSpacing = (-0.6).sp
+        )
+        Text(
+          text = stringResource(R.string.matchup_subtitle, data.roster.size, data.generation.label),
+          color = PokedexColors.TextFaint,
+          fontSize = 12.5.sp,
+          fontFamily = FontFamily.Monospace,
+          modifier = Modifier.padding(top = 4.dp),
+        )
+      }
+      Spacer(Modifier.height(18.dp))
+      Row(Modifier
+        .fillMaxWidth()
+        .weight(1f), horizontalArrangement = Arrangement.spacedBy(26.dp)) {
+        // Left — defender hero + picker
+        Column(
+          Modifier
+            .weight(1f)
+            .fillMaxHeight(),
+          verticalArrangement = Arrangement.spacedBy(18.dp)
+        ) {
+          DefenderHero(data.defenders)
+          Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            TvSectionLabel(stringResource(R.string.matchup_choose))
+            if (data.defending) {
+              Text(
+                stringResource(R.string.matchup_clear),
+                color = PokedexColors.TextDim,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier
+                  .clickable(onClick = viewModel::clearDefenders)
+                  .padding(4.dp)
+              )
+            }
+          }
+          TypePickerGrid(
+            roster = data.roster,
+            selected = data.defenders,
+            onToggle = viewModel::toggleDefender
+          )
+        }
+        // Right — grouped results
+        ResultsColumn(data, Modifier
+          .weight(1.35f)
+          .fillMaxHeight())
+      }
+      TvHints(
+        listOf(
+          stringResource(R.string.matchup_hint_pick),
+          stringResource(R.string.matchup_hint_toggle),
+          stringResource(R.string.matchup_hint_scroll)
+        )
+      )
+    }
+  }
 }
 
 @Composable
 private fun DefenderHero(defenders: List<Type>) {
-    val accent = defenders.firstOrNull()?.color() ?: PokedexColors.TextFaint
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(accent.copy(alpha = if (defenders.isEmpty()) 0.10f else 0.3f))
-            .border(1.dp, accent.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
-            .padding(horizontal = 16.dp, vertical = 26.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        TvSectionLabel(stringResource(R.string.matchup_defenders_label))
-        Spacer(Modifier.height(12.dp))
-        Text(
-            text = if (defenders.isEmpty()) stringResource(R.string.matchup_prompt) else defenders.joinToString(" / ") { it.name },
-            color = PokedexColors.TextPrimary, fontSize = if (defenders.isEmpty()) 14.sp else 26.sp, fontWeight = FontWeight.Bold,
-        )
-        if (defenders.isNotEmpty()) {
-            Spacer(Modifier.height(14.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { defenders.forEach { TypeBadge(it, size = TypeBadgeSize.MD) } }
+  val accent = defenders.firstOrNull()?.color() ?: PokedexColors.TextFaint
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .clip(RoundedCornerShape(16.dp))
+      .background(accent.copy(alpha = if (defenders.isEmpty()) 0.10f else 0.3f))
+      .border(1.dp, accent.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+      .padding(horizontal = 16.dp, vertical = 26.dp),
+    horizontalAlignment = Alignment.CenterHorizontally,
+  ) {
+    TvSectionLabel(stringResource(R.string.matchup_defenders_label))
+    Spacer(Modifier.height(12.dp))
+    Text(
+      text = if (defenders.isEmpty()) stringResource(R.string.matchup_prompt) else defenders.joinToString(
+        " / "
+      ) { it.name },
+      color = PokedexColors.TextPrimary,
+      fontSize = if (defenders.isEmpty()) 14.sp else 26.sp,
+      fontWeight = FontWeight.Bold,
+    )
+    if (defenders.isNotEmpty()) {
+      Spacer(Modifier.height(14.dp))
+      Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        defenders.forEach {
+          TypeBadge(
+            it,
+            size = TypeBadgeSize.MD
+          )
         }
+      }
     }
+  }
 }
 
 @Composable
 private fun TypePickerGrid(roster: List<Type>, selected: List<Type>, onToggle: (Type) -> Unit) {
-    LazyVerticalGrid(columns = GridCells.Fixed(3), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(items = roster, key = { it.name }) { type ->
-            val on = type in selected
-            val interaction = remember { MutableInteractionSource() }
-            val focused by interaction.collectIsFocusedAsState()
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(999.dp))
-                    .tvFocusRing(focused = focused, accent = type.color(), cornerRadius = 999.dp)
-                    .clickable(interactionSource = interaction, indication = null) { onToggle(type) }
-                    .focusable(interactionSource = interaction),
-                contentAlignment = Alignment.Center,
-            ) {
-                TypeBadge(type, size = TypeBadgeSize.SM, soft = !on, modifier = Modifier.fillMaxWidth())
-            }
-        }
+  LazyVerticalGrid(
+    columns = GridCells.Fixed(3),
+    horizontalArrangement = Arrangement.spacedBy(8.dp),
+    verticalArrangement = Arrangement.spacedBy(8.dp)
+  ) {
+    items(items = roster, key = { it.name }) { type ->
+      val on = type in selected
+      val interaction = remember { MutableInteractionSource() }
+      val focused by interaction.collectIsFocusedAsState()
+      Box(
+        modifier = Modifier
+          .clip(RoundedCornerShape(999.dp))
+          .tvFocusRing(focused = focused, accent = type.color(), cornerRadius = 999.dp)
+          .clickable(interactionSource = interaction, indication = null) { onToggle(type) }
+          .focusable(interactionSource = interaction),
+        contentAlignment = Alignment.Center,
+      ) {
+        TypeBadge(type, size = TypeBadgeSize.SM, soft = !on, modifier = Modifier.fillMaxWidth())
+      }
     }
+  }
 }
 
 private data class BucketMeta(val titleRes: Int, val multRes: Int, val color: Color)
 
 private fun DefenseBucket.meta(): BucketMeta = when (this) {
-    DefenseBucket.QUAD -> BucketMeta(R.string.matchup_group_quad, R.string.matchup_mult_quad, Color(0xFFFF5C5C))
-    DefenseBucket.DOUBLE -> BucketMeta(R.string.matchup_group_double, R.string.matchup_mult_double, Color(0xFFE0712F))
-    DefenseBucket.NEUTRAL -> BucketMeta(R.string.matchup_group_neutral, R.string.matchup_mult_neutral, Color(0xFF9AA0AC))
-    DefenseBucket.HALF -> BucketMeta(R.string.matchup_group_half, R.string.matchup_mult_half, Color(0xFF62C24A))
-    DefenseBucket.QUARTER -> BucketMeta(R.string.matchup_group_quarter, R.string.matchup_mult_quarter, Color(0xFF3FA98F))
-    DefenseBucket.IMMUNE -> BucketMeta(R.string.matchup_group_immune, R.string.matchup_mult_immune, Color(0xFF7A6BB0))
+  DefenseBucket.QUAD -> BucketMeta(
+    R.string.matchup_group_quad,
+    R.string.matchup_mult_quad,
+    Color(0xFFFF5C5C)
+  )
+
+  DefenseBucket.DOUBLE -> BucketMeta(
+    R.string.matchup_group_double,
+    R.string.matchup_mult_double,
+    Color(0xFFE0712F)
+  )
+
+  DefenseBucket.NEUTRAL -> BucketMeta(
+    R.string.matchup_group_neutral,
+    R.string.matchup_mult_neutral,
+    Color(0xFF9AA0AC)
+  )
+
+  DefenseBucket.HALF -> BucketMeta(
+    R.string.matchup_group_half,
+    R.string.matchup_mult_half,
+    Color(0xFF62C24A)
+  )
+
+  DefenseBucket.QUARTER -> BucketMeta(
+    R.string.matchup_group_quarter,
+    R.string.matchup_mult_quarter,
+    Color(0xFF3FA98F)
+  )
+
+  DefenseBucket.IMMUNE -> BucketMeta(
+    R.string.matchup_group_immune,
+    R.string.matchup_mult_immune,
+    Color(0xFF7A6BB0)
+  )
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ResultsColumn(data: TypeMatchupData, modifier: Modifier = Modifier) {
-    Column(modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        if (data.defending) {
-            Text(
-                text = stringResource(R.string.matchup_every_attacker, data.defenders.joinToString(" / ") { it.name }),
-                color = PokedexColors.TextDim, fontSize = 12.sp, fontWeight = FontWeight.SemiBold,
-            )
-        }
-        DefenseBucket.entries.forEach { bucket ->
-            val members = data.defenseGroups[bucket].orEmpty()
-            val meta = bucket.meta()
-            val interaction = remember { MutableInteractionSource() }
-            val focused by interaction.collectIsFocusedAsState()
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .tvFocusRing(focused = focused, accent = meta.color, cornerRadius = 10.dp)
-                    .focusable(interactionSource = interaction)
-                    .padding(6.dp),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 9.dp)) {
-                    Box(Modifier.size(width = 4.dp, height = 14.dp).clip(RoundedCornerShape(2.dp)).background(meta.color))
-                    Text(stringResource(meta.titleRes), color = PokedexColors.TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                    Text(stringResource(meta.multRes), color = meta.color, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, fontFamily = FontFamily.Monospace)
-                    Spacer(Modifier.weight(1f))
-                    Text(members.size.toString(), color = PokedexColors.TextFaint, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
-                }
-                if (members.isEmpty()) {
-                    Text(stringResource(R.string.matchup_group_none), color = PokedexColors.TextFaint, fontSize = 12.sp, fontStyle = FontStyle.Italic)
-                } else {
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(7.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-                        members.forEach { TypeBadge(it, size = TypeBadgeSize.SM) }
-                    }
-                }
-            }
-        }
+  Column(
+    modifier.verticalScroll(rememberScrollState()),
+    verticalArrangement = Arrangement.spacedBy(14.dp)
+  ) {
+    if (data.defending) {
+      Text(
+        text = stringResource(
+          R.string.matchup_every_attacker,
+          data.defenders.joinToString(" / ") { it.name }),
+        color = PokedexColors.TextDim, fontSize = 12.sp, fontWeight = FontWeight.SemiBold,
+      )
     }
+    DefenseBucket.entries.forEach { bucket ->
+      val members = data.defenseGroups[bucket].orEmpty()
+      val meta = bucket.meta()
+      val interaction = remember { MutableInteractionSource() }
+      val focused by interaction.collectIsFocusedAsState()
+      Column(
+        Modifier
+          .fillMaxWidth()
+          .clip(RoundedCornerShape(10.dp))
+          .tvFocusRing(focused = focused, accent = meta.color, cornerRadius = 10.dp)
+          .focusable(interactionSource = interaction)
+          .padding(6.dp),
+      ) {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(8.dp),
+          modifier = Modifier.padding(bottom = 9.dp)
+        ) {
+          Box(
+            Modifier
+              .size(width = 4.dp, height = 14.dp)
+              .clip(RoundedCornerShape(2.dp))
+              .background(meta.color)
+          )
+          Text(
+            stringResource(meta.titleRes),
+            color = PokedexColors.TextPrimary,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold
+          )
+          Text(
+            stringResource(meta.multRes),
+            color = meta.color,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = FontFamily.Monospace
+          )
+          Spacer(Modifier.weight(1f))
+          Text(
+            members.size.toString(),
+            color = PokedexColors.TextFaint,
+            fontSize = 12.sp,
+            fontFamily = FontFamily.Monospace
+          )
+        }
+        if (members.isEmpty()) {
+          Text(
+            stringResource(R.string.matchup_group_none),
+            color = PokedexColors.TextFaint,
+            fontSize = 12.sp,
+            fontStyle = FontStyle.Italic
+          )
+        } else {
+          FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(7.dp),
+            verticalArrangement = Arrangement.spacedBy(7.dp)
+          ) {
+            members.forEach { TypeBadge(it, size = TypeBadgeSize.SM) }
+          }
+        }
+      }
+    }
+  }
 }

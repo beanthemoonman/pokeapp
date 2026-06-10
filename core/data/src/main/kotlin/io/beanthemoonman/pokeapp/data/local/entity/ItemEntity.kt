@@ -9,13 +9,13 @@ import androidx.room.PrimaryKey
  */
 @Entity(tableName = "item")
 data class ItemEntity(
-    @PrimaryKey val id: Int,
-    val name: String,
-    /** [io.beanthemoonman.pokeapp.domain.model.ItemCategory] slug. */
-    val category: String,
-    val cost: Int,
-    val shortEffect: String,
-    val flavor: String,
-    val spriteUrl: String,
-    val cachedAt: Long
+  @PrimaryKey val id: Int,
+  val name: String,
+  /** [io.beanthemoonman.pokeapp.domain.model.ItemCategory] slug. */
+  val category: String,
+  val cost: Int,
+  val shortEffect: String,
+  val flavor: String,
+  val spriteUrl: String,
+  val cachedAt: Long
 )

@@ -17,11 +17,11 @@ enum class StartState { Loading, Selector, Shell }
 
 @HiltViewModel
 class AppStartViewModel @Inject constructor(
-    observeSelectedGeneration: ObserveSelectedGenerationUseCase,
+  observeSelectedGeneration: ObserveSelectedGenerationUseCase,
 ) : ViewModel() {
 
-    val startState: StateFlow<StartState> = observeSelectedGeneration()
-        .map { if (it == null) StartState.Selector else StartState.Shell }
-        .onEach { Timber.i("app start gate -> %s", it) }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, StartState.Loading)
+  val startState: StateFlow<StartState> = observeSelectedGeneration()
+    .map { if (it == null) StartState.Selector else StartState.Shell }
+    .onEach { Timber.i("app start gate -> %s", it) }
+    .stateIn(viewModelScope, SharingStarted.Eagerly, StartState.Loading)
 }

@@ -18,20 +18,20 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun Modifier.tvFocusRing(
-    focused: Boolean,
-    accent: Color,
-    cornerRadius: Dp = 14.dp,
-    focusedScale: Float = 1.03f,
+  focused: Boolean,
+  accent: Color,
+  cornerRadius: Dp = 14.dp,
+  focusedScale: Float = 1.03f,
 ): Modifier {
-    val scale by animateFloatAsState(
-        targetValue = if (focused) focusedScale else 1f,
-        label = "tv-focus-scale",
+  val scale by animateFloatAsState(
+    targetValue = if (focused) focusedScale else 1f,
+    label = "tv-focus-scale",
+  )
+  return this
+    .scale(scale)
+    .border(
+      width = if (focused) 2.dp else 1.dp,
+      color = if (focused) accent else Color.White.copy(alpha = 0.10f),
+      shape = RoundedCornerShape(cornerRadius),
     )
-    return this
-        .scale(scale)
-        .border(
-            width = if (focused) 2.dp else 1.dp,
-            color = if (focused) accent else Color.White.copy(alpha = 0.10f),
-            shape = RoundedCornerShape(cornerRadius),
-        )
 }

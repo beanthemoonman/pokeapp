@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 /** The full catalog of selectable generations. */
 class GetGenerationsUseCase @Inject constructor() {
-    operator fun invoke(): List<Generation> = Generations.all
+  operator fun invoke(): List<Generation> = Generations.all
 }
 
 /**
@@ -17,15 +17,15 @@ class GetGenerationsUseCase @Inject constructor() {
  * none is chosen yet (first launch → show the selector).
  */
 class ObserveSelectedGenerationUseCase @Inject constructor(
-    private val repository: GenerationRepository
+  private val repository: GenerationRepository
 ) {
-    operator fun invoke(): Flow<Generation?> =
-        repository.selectedGenerationId.map { id -> id?.let { Generations.byId(it) } }
+  operator fun invoke(): Flow<Generation?> =
+    repository.selectedGenerationId.map { id -> id?.let { Generations.byId(it) } }
 }
 
 /** Persists the user's generation choice. */
 class SelectGenerationUseCase @Inject constructor(
-    private val repository: GenerationRepository
+  private val repository: GenerationRepository
 ) {
-    suspend operator fun invoke(id: Int) = repository.selectGeneration(id)
+  suspend operator fun invoke(id: Int) = repository.selectGeneration(id)
 }
