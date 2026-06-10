@@ -513,3 +513,9 @@ the `tv-screens.jsx` wireframes against real ViewModels.
 - Moved **Foundations** (design system / shared tokens & components) to the top of the design canvas, above all screens.
 - Reorganized the canvas so each **view** pairs its Phone and TV artboards in the same section row, instead of grouping all phone screens first and a single "TV · Leanback" section last. New sections: Foundations · Root Version Select · Pokédex List/Browse · Pokémon Detail · Items Dictionary · Moves Dictionary · Team & Matchup — each containing both targets' states side by side. Artboard labels prefixed with "Phone —" / "TV —" for clarity.
 - No component sources changed; this is purely the `app.jsx` assembly. No `.design-canvas.state.json` sidecar exists, so no persisted order/label state needed migration.
+
+## GitHub Actions CI
+- Added `.github/workflows/ci.yml`: runs on push/PR to `master`. Sets up JDK 17 (Temurin) and the
+  Android SDK, runs `./gradlew test`, assembles debug APKs for both app-phone and app-tv, and
+  uploads test reports + debug APKs as artifacts. Uses `gradle/actions/setup-gradle` for build
+  caching and `concurrency` to cancel superseded runs.
